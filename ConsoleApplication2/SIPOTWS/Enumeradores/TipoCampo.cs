@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using ConsoleApplication2.SIPOTWS.Decoradores;
 
 namespace ConsoleApplication2.SIPOTWS.Enumeradores
 {
     public enum TipoCampo
     {
+        [NoValidar]
         [Description("Inexistente o Nulo")]
         Nulo = 0,
 
@@ -28,6 +30,7 @@ namespace ConsoleApplication2.SIPOTWS.Enumeradores
         [Description("Pagina Web")]
         PaginaWeb = 7,
 
+        [NoValidar]
         [Description("Archivo")]
         Archivo = 8,
 
@@ -35,8 +38,9 @@ namespace ConsoleApplication2.SIPOTWS.Enumeradores
         Catalogo = 9,
 
         [Description("Tabla")]
-        Tabla = 10, 
+        Tabla = 10,
 
+        [NoValidar]
         [Description("Separador")]
         Separador = 11,
 
@@ -46,6 +50,7 @@ namespace ConsoleApplication2.SIPOTWS.Enumeradores
         [Description("Fecha de Actualizacion")]
         FechaActualizacion = 13,
 
+        [PuedeEstarVacio]
         [Description("Nota")]
         Nota = 14
     }
