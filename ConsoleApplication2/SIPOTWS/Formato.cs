@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using ConsoleApplication2.SIPOTWS.Campos;
 
 namespace ConsoleApplication2.SIPOTWS
 {
+    [Serializable]
     public class Formato
     {
         public int ID { get; set; }

@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using ConsoleApplication2.SIPOTWS.Enumeradores;
+
+namespace ConsoleApplication2.SIPOTWS.Campos
+{
+    [Serializable]
+    public class PaginaWeb : Campo
+    {
+        public override List<Error> Validar(Registro registro)
+        {
+            var valor = registro.Valor ?? string.Empty;
+            var posicion = registro.Posicion;
+            var errores = new List<Error>();
+
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
+                return errores;
+            }
+
+            if (!Regex.IsMatch(valor, @"\A(?:((https?|ftp)://(-\.)?([^\s/?.#-]+\.?)+(/[^\s]*)?)?)\Z"))
+                errores.Add(new Error(TipoError.Grave, posicion, "URL invalida. Tipos de URL permitidos: http://, https:// y ftp://"));
+
+            return errores;
+        }
+    }
+}

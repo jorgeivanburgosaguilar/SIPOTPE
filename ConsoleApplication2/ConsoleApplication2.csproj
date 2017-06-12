@@ -52,14 +52,26 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SIPOTWS\Decoradores\NoValidar.cs" />
-    <Compile Include="SIPOTWS\Decoradores\PuedeEstarVacio.cs" />
+    <Compile Include="SIPOTWS\Campos\Anio.cs" />
+    <Compile Include="SIPOTWS\Campos\Archivo.cs" />
+    <Compile Include="SIPOTWS\Campos\Catalogo.cs" />
+    <Compile Include="SIPOTWS\Campos\Fecha.cs" />
+    <Compile Include="SIPOTWS\Campos\FechaActualizacion.cs" />
+    <Compile Include="SIPOTWS\Campos\Hora.cs" />
+    <Compile Include="SIPOTWS\Campos\Moneda.cs" />
+    <Compile Include="SIPOTWS\Campos\Nota.cs" />
+    <Compile Include="SIPOTWS\Campos\Numero.cs" />
+    <Compile Include="SIPOTWS\Campos\PaginaWeb.cs" />
+    <Compile Include="SIPOTWS\Campos\Separador.cs" />
+    <Compile Include="SIPOTWS\Campos\Tabla.cs" />
+    <Compile Include="SIPOTWS\Campos\TextoCorto.cs" />
+    <Compile Include="SIPOTWS\Campos\TextoLargo.cs" />
     <Compile Include="SIPOTWS\Enumeradores\Extensiones.cs" />
     <Compile Include="SIPOTWS\Enumeradores\TipoError.cs" />
     <Compile Include="SIPOTWS\Error.cs" />
     <Compile Include="SIPOTWS\Formato.cs" />
-    <Compile Include="SIPOTWS\Enumeradores\TipoCampo.cs" />
-    <Compile Include="SIPOTWS\Campo.cs" />
+    <Compile Include="SIPOTWS\Campos\Campo.cs" />
+    <Compile Include="SIPOTWS\Posicion.cs" />
     <Compile Include="SIPOTWS\Registro.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +83,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SIPOTWS\Campos\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

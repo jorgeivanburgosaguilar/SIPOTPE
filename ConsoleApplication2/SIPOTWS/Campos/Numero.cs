@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using ConsoleApplication2.SIPOTWS.Enumeradores;
+
+namespace ConsoleApplication2.SIPOTWS.Campos
+{
+    [Serializable]
+    public class Numero : Campo
+    {
+        public override List<Error> Validar(Registro registro)
+        {
+            var valor = registro.Valor ?? string.Empty;
+            var posicion = registro.Posicion;
+            var errores = new List<Error>();
+
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                errores.Add(new Error(TipoError.Grave, posicion, "El valor numerico no puede estar vacio"));
+                return errores;
+            }
+
+            if (!Regex.IsMatch(valor, @"[\-+]?[0-9]{1,12}([.][0-9]{1,2})?"))
+                errores.Add(new Error(TipoError.Grave, posicion,
+                    "El valor numerico es invalido. El valor numerico debe tener un numero de maximo de 12 digitos con 2 digitos decimales opcionales, Ejemplo(s): 123456789012, 123456789012.1 y 123456789012.10"));
+
+            return errores;
+        }
+    }
+}

@@ -5,7 +5,7 @@
         private string _valor;
 
         public int Numero { get; set; }
-        public string Posicion { get; set; }
+        public Posicion Posicion { get; set; }
 
         public string Valor
         {
@@ -16,15 +16,8 @@
         public Registro()
         {
             Numero = 0;
-            Posicion = string.Empty;
+            Posicion = new Posicion();
             Valor = string.Empty;
-        }
-
-        public Registro(int numero, string posicion, string valor)
-        {
-            Numero = numero;
-            Posicion = posicion;
-            Valor = valor;
         }
     }
 }
