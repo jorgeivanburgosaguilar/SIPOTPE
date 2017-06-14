@@ -47,17 +47,52 @@ namespace ConsoleApplication2
             return cadena;
         }
 
-        
+        private static void ProcesarCatalogo(Campo campo, Workbook libro, DataValidation validaciones)
+        {
+            if (!(campo is Catalogo) || libro == null || validaciones == null)
+                return;
+
+            var criterio = validaciones.Criteria;
+            if (criterio == null)
+                return;
+
+            if (!criterio.IsFormula)
+                return;
+
+            if (string.IsNullOrWhiteSpace(criterio.Formula))
+                return;
+
+            var nombreHoja = criterio.Formula.Remove(0, 1);
+            if (string.IsNullOrWhiteSpace(nombreHoja))
+                return;
+
+            var hojaFormato = libro.Worksheets[nombreHoja];
+            var maximaCantidadFilas = hojaFormato.Rows.LastUsedIndex;
+            var catalogo = (Catalogo) campo;
+
+            for (var x = 0; x <= maximaCantidadFilas; x++)
+            {
+                var celda = hojaFormato.Columns[0][x];
+                catalogo.Elementos.Add(x, ObtenerValorCelda(celda.Value, false));
+            }
+        }
+
+        private static void ProcesarTabla(Campo campo, Workbook libro)
+        {
+            if (!(campo is Tabla) || libro == null)
+                return;
+        }
+
         static void Main(string[] args)
         {
             var argumento1 = string.Empty;
             if (args.Length > 0)
                 argumento1 = args[0];
 
-            var workbook = new Workbook();
-            workbook.LoadDocument(string.IsNullOrWhiteSpace(argumento1) ? "INAIP_F08.xls" : "Formato_Pruebas.xls", DocumentFormat.Xls);
+            var libro = new Workbook();
+            libro.LoadDocument(!string.IsNullOrWhiteSpace(argumento1) ? "INAIP_F08.xls" : "Formato_Pruebas.xls", DocumentFormat.Xls);
             var nombreHoja = "Reporte de Formatos";
-            var hojaFormato = workbook.Worksheets[nombreHoja];
+            var hojaFormato = libro.Worksheets[nombreHoja];
             var maximaCantidadFilas = hojaFormato.Rows.LastUsedIndex;
             var maximaCantidadColumnas = hojaFormato.Columns.LastUsedIndex;
 
@@ -70,7 +105,7 @@ namespace ConsoleApplication2
             {
                 // ReSharper disable once UseObjectOrCollectionInitializer
                 var idTipoCampo = Convert.ToInt32(hojaFormato.Columns[x][3].Value.ToString());
-                var campo = Campo.FabricarPorTipo(idTipoCampo);
+                var campo = Fabrica.FabricarPorTipo(idTipoCampo);
                 campo.ID = Convert.ToInt32(hojaFormato.Columns[x][4].Value.ToString());
                 campo.Nombre = hojaFormato.Columns[x][6].Value.ToString();
 
@@ -78,17 +113,27 @@ namespace ConsoleApplication2
                 {
                     var celda = hojaFormato.Columns[x][y];
 
+                    if (y == 7)
+                    {
+                        if (campo is Catalogo)
+                            ProcesarCatalogo(campo, libro, hojaFormato.DataValidations.GetDataValidation(celda));
+
+                        if (campo is Tabla)
+                            ProcesarTabla(campo, libro);
+                    }
+
                     // ReSharper disable once UseObjectOrCollectionInitializer
                     var registro = new Registro();
                     registro.Numero = y - 7;
                     registro.Posicion.Hoja = nombreHoja;
-                    registro.Posicion.X = celda.LeftColumnIndex;
-                    registro.Posicion.Y = celda.TopRowIndex;
+                    registro.Posicion.Columna = celda.LeftColumnIndex;
+                    registro.Posicion.Fila = celda.TopRowIndex;
                     registro.Valor = ObtenerValorCelda(celda.Value, campo is Hora);
                     campo.Registros.Add(registro);
                 }
 
                 formato.Campos.Add(campo);
+                listaErrores.AddRange(campo.Validar());
                 listaErrores.AddRange(campo.ValidarRegistros());
             }
 

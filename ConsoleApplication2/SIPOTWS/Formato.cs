@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ConsoleApplication2.SIPOTWS.Campos;
+using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS
 {
@@ -23,6 +24,21 @@ namespace ConsoleApplication2.SIPOTWS
             ID = id;
             Nombre = nombre;
             Campos = new List<Campo>();
+        }
+
+        public List<Error> Validar()
+        {
+            var errores = new List<Error>();
+
+            if (ID < 0 || ID > 99999999)
+                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                    "El identificador del formato es invalido, verifique que la estructura del formato no haya sido alterada."));
+
+            if (string.IsNullOrWhiteSpace(Nombre) || Nombre.Length > 4000)
+                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                    "El nombre del formato es invalido, verifique que la estructura del formato no haya sido alterada."));
+
+            return errores;
         }
     }
 }

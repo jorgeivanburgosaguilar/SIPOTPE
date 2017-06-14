@@ -7,27 +7,27 @@ namespace ConsoleApplication2.SIPOTWS
     public class Posicion
     {
         public string Hoja { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int Columna { get; set; }
+        public int Fila { get; set; }
 
         public Posicion()
         {
             Hoja = string.Empty;
-            X = 0;
-            Y = 0;
+            Columna = 0;
+            Fila = 0;
         }
 
-        public Posicion(string hoja, int x, int y)
+        public Posicion(string hoja, int columna, int fila)
         {
             Hoja = hoja;
-            X = x;
-            Y = y;
+            Columna = columna;
+            Fila = fila;
         }
 
         public override string ToString()
         {
             var hoja = Hoja.Any(char.IsWhiteSpace) ? string.Format("'{0}'", Hoja) : Hoja;
-            return string.Format("{0}!{1}{2}", hoja, X, Y);
+            return string.Format("{0}!{1}{2}", hoja, Columna, Fila);
         }
     }
 }

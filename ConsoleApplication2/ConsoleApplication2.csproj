@@ -55,6 +55,7 @@
     <Compile Include="SIPOTWS\Campos\Anio.cs" />
     <Compile Include="SIPOTWS\Campos\Archivo.cs" />
     <Compile Include="SIPOTWS\Campos\Catalogo.cs" />
+    <Compile Include="SIPOTWS\Campos\Fabrica.cs" />
     <Compile Include="SIPOTWS\Campos\Fecha.cs" />
     <Compile Include="SIPOTWS\Campos\FechaActualizacion.cs" />
     <Compile Include="SIPOTWS\Campos\Hora.cs" />

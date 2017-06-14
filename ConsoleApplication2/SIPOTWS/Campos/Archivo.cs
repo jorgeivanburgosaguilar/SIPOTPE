@@ -7,7 +7,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class Archivo : Campo
     {
-        public override List<Error> Validar(Registro registro)
+        public override List<Error> ValidarRegistro(Registro registro)
         {
             var error = new List<Error>
             {

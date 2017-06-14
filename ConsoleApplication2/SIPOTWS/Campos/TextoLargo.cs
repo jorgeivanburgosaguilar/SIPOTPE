@@ -13,7 +13,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             get { return 4000; }
         }
 
-        public override List<Error> Validar(Registro registro)
+        public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;
             var posicion = registro.Posicion;

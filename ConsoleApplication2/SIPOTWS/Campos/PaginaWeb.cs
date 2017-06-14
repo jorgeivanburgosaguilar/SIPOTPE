@@ -8,7 +8,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class PaginaWeb : Campo
     {
-        public override List<Error> Validar(Registro registro)
+        public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;
             var posicion = registro.Posicion;
@@ -20,7 +20,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 return errores;
             }
 
-            if (!Regex.IsMatch(valor, @"\A(?:((https?|ftp)://(-\.)?([^\s/?.#-]+\.?)+(/[^\s]*)?)?)\Z"))
+            if (!Regex.IsMatch(valor, @"\A(?:((https?|ftp)://(-\.)?([^\s/?.#]+\.?)+(/[^\s]*)?)?)\Z"))
                 errores.Add(new Error(TipoError.Grave, posicion, "URL invalida. Tipos de URL permitidos: http://, https:// y ftp://"));
 
             return errores;
