@@ -51,5 +51,96 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             return errores;
         }
+
+        public static Campo FabricarPorTipo(int idTipoCampo)
+        {
+            Campo campo;
+
+            switch (idTipoCampo)
+            {
+                case 1:
+                    campo = new TextoCorto();
+                    break;
+
+                case 2:
+                    campo = new TextoLargo();
+                    break;
+
+                case 3:
+                    campo = new Numero();
+                    break;
+
+                case 4:
+                    campo = new Fecha();
+                    break;
+
+                case 5:
+                    campo = new Hora();
+                    break;
+
+                case 6:
+                    campo = new Moneda();
+                    break;
+
+                case 7:
+                    campo = new PaginaWeb();
+                    break;
+
+                case 8:
+                    campo = new Archivo();
+                    break;
+
+                case 9:
+                    campo = new Catalogo();
+                    break;
+
+                case 10:
+                    campo = new Tabla();
+                    break;
+
+                case 11:
+                    campo = new Separador();
+                    break;
+
+                case 12:
+                    campo = new Anio();
+                    break;
+
+                case 13:
+                    campo = new FechaActualizacion();
+                    break;
+
+                case 14:
+                    campo = new Nota();
+                    break;
+
+                // Tipo campo invalido especial para el id de la tabla
+                case -9999:
+                    campo = new IdentificadorTabla();
+                    break;
+
+                //case 0:
+                default:
+                    campo = new Campo();
+                    break;
+            }
+
+            return campo;
+        }
+
+        public static Campo FabricarPorTipo(string strIdTipoCampo, bool esTabla = false)
+        {
+            try
+            {
+                if (esTabla && string.IsNullOrWhiteSpace(strIdTipoCampo))
+                    strIdTipoCampo = "-9999";
+
+                return FabricarPorTipo(string.IsNullOrWhiteSpace(strIdTipoCampo) ? 0 : Convert.ToInt32(strIdTipoCampo));
+            }
+            catch
+            {
+                return FabricarPorTipo(0);
+            }
+        }
     }
 }
