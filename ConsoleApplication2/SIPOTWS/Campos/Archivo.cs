@@ -7,11 +7,31 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class Archivo : Campo
     {
+        public override List<Error> Validar()
+        {
+            var error = new List<Error>
+            {
+                new Error(TipoError.Critico, new Posicion(),
+                    "El tipo de campo archivo no puede ser procesado por esta aplicación, comuníquese con el área de soporte.")
+            };
+            return error;
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var error = new List<Error>
             {
                 new Error(TipoError.Critico, registro.Posicion,
+                    "El tipo de campo archivo no puede ser procesado por esta aplicación, comuníquese con el área de soporte.")
+            };
+            return error;
+        }
+
+        public override List<Error> ValidarRegistros()
+        {
+            var error = new List<Error>
+            {
+                new Error(TipoError.Critico, new Posicion(),
                     "El tipo de campo archivo no puede ser procesado por esta aplicación, comuníquese con el área de soporte.")
             };
             return error;

@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using ConsoleApplication2.SIPOTWS;
 using ConsoleApplication2.SIPOTWS.Campos;
 using DevExpress.Spreadsheet;
-using Newtonsoft.Json;
-using Formatting = Newtonsoft.Json.Formatting;
 
 namespace ConsoleApplication2
 {
-    class Program
+    public class Program
     {
-        private static string ObtenerValorCelda(CellValue valor, bool esHora)
+        private static string ObtenerValorCelda(CellValue valor, bool esHora = false)
         {
             if (valor == null)
                 return string.Empty;
@@ -66,14 +64,14 @@ namespace ConsoleApplication2
             if (string.IsNullOrWhiteSpace(nombreHoja))
                 return;
 
-            var hojaFormato = libro.Worksheets[nombreHoja];
-            var maximaCantidadFilas = hojaFormato.Rows.LastUsedIndex;
+            var hojaCatalogo = libro.Worksheets[nombreHoja];
+            var maximaCantidadFilas = hojaCatalogo.Rows.LastUsedIndex;
             var catalogo = (Catalogo) campo;
 
-            for (var x = 0; x <= maximaCantidadFilas; x++)
+            for (var fila = 0; fila <= maximaCantidadFilas; fila++)
             {
-                var celda = hojaFormato.Columns[0][x];
-                catalogo.Elementos.Add(x, ObtenerValorCelda(celda.Value, false));
+                var celda = hojaCatalogo.Columns[0][fila];
+                catalogo.Elementos.Add(fila, ObtenerValorCelda(celda.Value));
             }
         }
 
@@ -81,39 +79,89 @@ namespace ConsoleApplication2
         {
             if (!(campo is Tabla) || libro == null)
                 return;
+
+            var tabla = (Tabla) campo;
+            var nombreHojaTabla = string.Format("Tabla {0}", tabla.ID);
+            var hojaTabla = libro.Worksheets[nombreHojaTabla];
+            var maximaCantidadFilas = hojaTabla.Rows.LastUsedIndex;
+            var maximaCantidadColumnas = hojaTabla.Columns.LastUsedIndex;
+
+            for (var columna = 0; columna <= maximaCantidadColumnas; columna++)
+            {
+                var strIdTipoCampo = ObtenerValorCelda(hojaTabla.Columns[columna][0].Value);
+                var strIdCampo = ObtenerValorCelda(hojaTabla.Columns[columna][1].Value);
+                var strNombreCampo = ObtenerValorCelda(hojaTabla.Columns[columna][2].Value);
+
+                var campoTabla = Campo.FabricarPorTipo(strIdTipoCampo, true);
+                campoTabla.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
+                campoTabla.Nombre = strNombreCampo;
+
+                for (var fila = 3; fila <= maximaCantidadFilas; fila++)
+                {
+                    var celda = hojaTabla.Columns[columna][fila];
+
+                    if (fila == 3)
+                    {
+                        if (campoTabla is Catalogo)
+                            ProcesarCatalogo(campoTabla, libro, hojaTabla.DataValidations.GetDataValidation(celda));
+                    }
+
+                    // ReSharper disable once UseObjectOrCollectionInitializer
+                    var registro = new Registro();
+                    registro.Numero = fila - 3;
+                    registro.Posicion.Hoja = nombreHojaTabla;
+                    registro.Posicion.Columna = celda.LeftColumnIndex;
+                    registro.Posicion.Fila = celda.TopRowIndex;
+                    registro.Valor = ObtenerValorCelda(celda.Value, campoTabla is Hora);
+                    campoTabla.Registros.Add(registro);
+                }
+
+                tabla.Campos.Add(campoTabla);
+            }
         }
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Inicio: {0:G}", DateTime.Now);
+
             var argumento1 = string.Empty;
             if (args.Length > 0)
                 argumento1 = args[0];
 
+            var nombreLibro = string.IsNullOrWhiteSpace(argumento1) ? "Formato_Pruebas.xls" : argumento1;
             var libro = new Workbook();
-            libro.LoadDocument(!string.IsNullOrWhiteSpace(argumento1) ? "INAIP_F08.xls" : "Formato_Pruebas.xls", DocumentFormat.Xls);
-            var nombreHoja = "Reporte de Formatos";
+            libro.LoadDocument(nombreLibro);
+
+            const string nombreHoja = "Reporte de Formatos";
             var hojaFormato = libro.Worksheets[nombreHoja];
             var maximaCantidadFilas = hojaFormato.Rows.LastUsedIndex;
             var maximaCantidadColumnas = hojaFormato.Columns.LastUsedIndex;
 
-            var idFormato = Convert.ToInt32(hojaFormato.Columns[0][0].Value.ToString());
-            var nombreFormato = hojaFormato.Columns[1][2].Value.ToString();
+            var strIdFormato = ObtenerValorCelda(hojaFormato.Columns[0][0].Value);
+            var idFormato = string.IsNullOrWhiteSpace(strIdFormato) ? 0 : Convert.ToInt32(strIdFormato);
+            var nombreFormato = ObtenerValorCelda(hojaFormato.Columns[1][2].Value);
             var formato = new Formato(idFormato, nombreFormato);
-            var listaErrores = new List<Error>();
 
-            for (var x = 0; x <= maximaCantidadColumnas; x++)
+            // Procesar Campos del Formato
+            for (var columna = 0; columna <= maximaCantidadColumnas; columna++)
             {
-                // ReSharper disable once UseObjectOrCollectionInitializer
-                var idTipoCampo = Convert.ToInt32(hojaFormato.Columns[x][3].Value.ToString());
-                var campo = Fabrica.FabricarPorTipo(idTipoCampo);
-                campo.ID = Convert.ToInt32(hojaFormato.Columns[x][4].Value.ToString());
-                campo.Nombre = hojaFormato.Columns[x][6].Value.ToString();
+                var strIdTipoCampo = ObtenerValorCelda(hojaFormato.Columns[columna][3].Value);
+                var campo = Campo.FabricarPorTipo(strIdTipoCampo);
 
-                for (var y = 7; y <= maximaCantidadFilas; y++)
+                var strIdCampo = ObtenerValorCelda(hojaFormato.Columns[columna][4].Value);
+                campo.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
+                campo.Nombre = ObtenerValorCelda(hojaFormato.Columns[columna][6].Value);
+
+                // Procesar Registros de los Campos del Formato
+                var esTipoCampoHora = campo is Hora;
+                for (var fila = 7; fila <= maximaCantidadFilas; fila++)
                 {
-                    var celda = hojaFormato.Columns[x][y];
+                    var celda = hojaFormato.Columns[columna][fila];
 
-                    if (y == 7)
+                    // Si es el primer registro entonces revisamos 
+                    // si debemos proecesar los registros de los catalogos 
+                    // y de las tablas.
+                    if (fila == 7)
                     {
                         if (campo is Catalogo)
                             ProcesarCatalogo(campo, libro, hojaFormato.DataValidations.GetDataValidation(celda));
@@ -124,24 +172,23 @@ namespace ConsoleApplication2
 
                     // ReSharper disable once UseObjectOrCollectionInitializer
                     var registro = new Registro();
-                    registro.Numero = y - 7;
+                    registro.Numero = fila - 7;
                     registro.Posicion.Hoja = nombreHoja;
                     registro.Posicion.Columna = celda.LeftColumnIndex;
                     registro.Posicion.Fila = celda.TopRowIndex;
-                    registro.Valor = ObtenerValorCelda(celda.Value, campo is Hora);
+                    registro.Valor = ObtenerValorCelda(celda.Value, esTipoCampoHora);
                     campo.Registros.Add(registro);
                 }
 
                 formato.Campos.Add(campo);
-                listaErrores.AddRange(campo.Validar());
-                listaErrores.AddRange(campo.ValidarRegistros());
             }
 
+            // Validar Formato
+            var listaErrores = formato.Validar();
 
-            File.WriteAllText("objeto.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
-            File.WriteAllText("errores.json", JsonConvert.SerializeObject(listaErrores, Formatting.Indented));
-            Console.WriteLine("Cantidad Errores Encontrados: {0}", listaErrores.Count);
-            Console.WriteLine("Fin");
+            File.WriteAllText("errores.txt", string.Join("\n", listaErrores.ToList()));
+            Console.WriteLine("\nCantidad Errores Encontrados: {0}\n", listaErrores.Count);
+            Console.WriteLine("Fin: {0:G}", DateTime.Now);
             Console.ReadLine();
         }
     }

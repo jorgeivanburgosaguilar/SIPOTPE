@@ -38,6 +38,19 @@ namespace ConsoleApplication2.SIPOTWS
                 errores.Add(new Error(TipoError.Critico, new Posicion(),
                     "El nombre del formato es invalido, verifique que la estructura del formato no haya sido alterada."));
 
+            // Validar Campos del Formato
+            errores.AddRange(ValidarCampos());
+
+            return errores;
+        }
+
+        public List<Error> ValidarCampos()
+        {
+            var errores = new List<Error>();
+
+            foreach (var campo in Campos)
+                errores.AddRange(campo.Validar());
+
             return errores;
         }
     }

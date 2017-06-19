@@ -26,7 +26,7 @@ namespace ConsoleApplication2.SIPOTWS
 
         public override string ToString()
         {
-            return string.Format("({2}) {0}: {1}", Tipo.Descripcion(), Mensaje, Posicion);
+            return string.Format("{0}: {1} ({2})", Tipo.Descripcion(), Mensaje, Posicion);
         }
     }
 }

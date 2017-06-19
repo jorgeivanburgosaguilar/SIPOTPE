@@ -24,10 +24,33 @@ namespace ConsoleApplication2.SIPOTWS
             Fila = fila;
         }
 
+        /// <remarks>Columna y Fila deben estar en base a 0</remarks>
+        public static string ObtenerParaExcel(string hoja, int columna, int fila)
+        {
+            var dividendo = columna + 1;
+            var columnaParaExcel = string.Empty;
+
+            while (dividendo > 0)
+            {
+                var modulo = (dividendo - 1) % 26;
+                columnaParaExcel = Convert.ToChar(65 + modulo) + columnaParaExcel;
+                dividendo = (dividendo - modulo) / 26;
+            }
+
+            var hojaParaExcel = hoja.Any(char.IsWhiteSpace) ? string.Format("'{0}'", hoja) : hoja;
+            var filaParaExcel = fila + 1;
+
+            return string.Format("{0}!{1}{2}", hojaParaExcel, columnaParaExcel, filaParaExcel);
+        }
+
+        public string ParaExcel()
+        {
+            return ObtenerParaExcel(Hoja, Columna, Fila);
+        }
+
         public override string ToString()
         {
-            var hoja = Hoja.Any(char.IsWhiteSpace) ? string.Format("'{0}'", Hoja) : Hoja;
-            return string.Format("{0}!{1}{2}", hoja, Columna, Fila);
+            return ParaExcel();
         }
     }
 }

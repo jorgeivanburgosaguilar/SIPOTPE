@@ -17,7 +17,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         // ToDo Como sacar la hoja que le corresponde al catalogo?
         public override List<Error> Validar()
         {
-            var errores = base.Validar();
+            var errores = new List<Error>();
 
             // Validacion para ver si tenemos elementos en el catalogo
             if (Elementos.Count <= 0)
@@ -35,6 +35,9 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 else
                     lista.Add(elemento.Key, elemento.Value);
             }
+
+            // Ejecutar las validaciones de la base (ID, Nombre y Registros)
+            errores.AddRange(base.Validar());
 
             return errores;
         }

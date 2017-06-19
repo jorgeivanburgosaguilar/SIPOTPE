@@ -30,6 +30,9 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 errores.Add(new Error(TipoError.Critico, new Posicion(),
                     "El nombre del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
 
+            // Validar Registros de los Campos
+            errores.AddRange(ValidarRegistros());
+
             return errores;
         }
 

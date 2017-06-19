@@ -11,8 +11,9 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         public override List<Error> Validar()
         {
             // El campo IdentificadorTabla no implementa ninguna validacion
-            // en el ID o nombre del campo.
-            return new List<Error>();
+            // en el ID o Nombre del campo, por lo que solo se validan
+            // sus registros
+            return ValidarRegistros();
         }
 
         public override List<Error> ValidarRegistro(Registro registro)
