@@ -4,7 +4,10 @@ using System.IO;
 using System.Linq;
 using ConsoleApplication2.SIPOTWS;
 using ConsoleApplication2.SIPOTWS.Campos;
+using ConsoleApplication2.SIPOTWS.Enumeradores;
 using DevExpress.Spreadsheet;
+using Newtonsoft.Json;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace ConsoleApplication2
 {
@@ -60,18 +63,25 @@ namespace ConsoleApplication2
             if (string.IsNullOrWhiteSpace(criterio.Formula))
                 return;
 
-            var nombreHoja = criterio.Formula.Remove(0, 1);
-            if (string.IsNullOrWhiteSpace(nombreHoja))
+            var nombreHojaCatalogo = criterio.Formula.Remove(0, 1);
+            if (string.IsNullOrWhiteSpace(nombreHojaCatalogo))
                 return;
 
-            var hojaCatalogo = libro.Worksheets[nombreHoja];
-            var maximaCantidadFilas = hojaCatalogo.Rows.LastUsedIndex;
+            var hojaCatalogo = libro.Worksheets[nombreHojaCatalogo];
+            var rangoCatalogo = hojaCatalogo.GetDataRange();
+            var maximaCantidadFilas = rangoCatalogo.BottomRowIndex;
             var catalogo = (Catalogo) campo;
 
             for (var fila = 0; fila <= maximaCantidadFilas; fila++)
             {
                 var celda = hojaCatalogo.Columns[0][fila];
-                catalogo.Elementos.Add(fila, ObtenerValorCelda(celda.Value));
+                if (celda == null)
+                    continue;
+
+                // Los elementos del catalogo se insertan en minusculas
+                // para resolver el problema de que los elementos del catalogo
+                // no son sensibles a mayusculas y minusculas.
+                catalogo.Elementos.Add(fila, ObtenerValorCelda(celda.Value).ToLowerInvariant());
             }
         }
 
@@ -83,19 +93,24 @@ namespace ConsoleApplication2
             var tabla = (Tabla) campo;
             var nombreHojaTabla = string.Format("Tabla {0}", tabla.ID);
             var hojaTabla = libro.Worksheets[nombreHojaTabla];
-            var maximaCantidadFilas = hojaTabla.Rows.LastUsedIndex;
-            var maximaCantidadColumnas = hojaTabla.Columns.LastUsedIndex;
+            var rangoTabla = hojaTabla.GetDataRange();
+            var maximaCantidadFilas = rangoTabla.BottomRowIndex;
+            var maximaCantidadColumnas = rangoTabla.RightColumnIndex;
 
+            // Procesar Campos de la Tabla
             for (var columna = 0; columna <= maximaCantidadColumnas; columna++)
             {
                 var strIdTipoCampo = ObtenerValorCelda(hojaTabla.Columns[columna][0].Value);
                 var strIdCampo = ObtenerValorCelda(hojaTabla.Columns[columna][1].Value);
-                var strNombreCampo = ObtenerValorCelda(hojaTabla.Columns[columna][2].Value);
+                var celdaNombreCampo = hojaTabla.Columns[columna][2];
 
                 var campoTabla = Campo.FabricarPorTipo(strIdTipoCampo, true);
                 campoTabla.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
-                campoTabla.Nombre = strNombreCampo;
+                campoTabla.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
+                campoTabla.Posicion = new Posicion(nombreHojaTabla, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 
+                // Procesar Registros de los Campos de la Tabla
+                var esTipoCampoTablaHora = campoTabla is Hora;
                 for (var fila = 3; fila <= maximaCantidadFilas; fila++)
                 {
                     var celda = hojaTabla.Columns[columna][fila];
@@ -109,10 +124,8 @@ namespace ConsoleApplication2
                     // ReSharper disable once UseObjectOrCollectionInitializer
                     var registro = new Registro();
                     registro.Numero = fila - 3;
-                    registro.Posicion.Hoja = nombreHojaTabla;
-                    registro.Posicion.Columna = celda.LeftColumnIndex;
-                    registro.Posicion.Fila = celda.TopRowIndex;
-                    registro.Valor = ObtenerValorCelda(celda.Value, campoTabla is Hora);
+                    registro.Posicion = new Posicion(nombreHojaTabla, celda.LeftColumnIndex, celda.TopRowIndex);
+                    registro.Valor = ObtenerValorCelda(celda.Value, esTipoCampoTablaHora);
                     campoTabla.Registros.Add(registro);
                 }
 
@@ -122,7 +135,7 @@ namespace ConsoleApplication2
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Inicio: {0:G}", DateTime.Now);
+            Console.WriteLine("Inicio: {0:G}\n", DateTime.Now);
 
             var argumento1 = string.Empty;
             if (args.Length > 0)
@@ -132,10 +145,11 @@ namespace ConsoleApplication2
             var libro = new Workbook();
             libro.LoadDocument(nombreLibro);
 
-            const string nombreHoja = "Reporte de Formatos";
-            var hojaFormato = libro.Worksheets[nombreHoja];
-            var maximaCantidadFilas = hojaFormato.Rows.LastUsedIndex;
-            var maximaCantidadColumnas = hojaFormato.Columns.LastUsedIndex;
+            const string nombreHojaFormato = "Reporte de Formatos";
+            var hojaFormato = libro.Worksheets[nombreHojaFormato];
+            var rangoFormato = hojaFormato.GetDataRange();
+            var maximaCantidadFilas = rangoFormato.BottomRowIndex;
+            var maximaCantidadColumnas = rangoFormato.RightColumnIndex;
 
             var strIdFormato = ObtenerValorCelda(hojaFormato.Columns[0][0].Value);
             var idFormato = string.IsNullOrWhiteSpace(strIdFormato) ? 0 : Convert.ToInt32(strIdFormato);
@@ -146,11 +160,13 @@ namespace ConsoleApplication2
             for (var columna = 0; columna <= maximaCantidadColumnas; columna++)
             {
                 var strIdTipoCampo = ObtenerValorCelda(hojaFormato.Columns[columna][3].Value);
-                var campo = Campo.FabricarPorTipo(strIdTipoCampo);
-
                 var strIdCampo = ObtenerValorCelda(hojaFormato.Columns[columna][4].Value);
+                var celdaNombreCampo = hojaFormato.Columns[columna][6];
+
+                var campo = Campo.FabricarPorTipo(strIdTipoCampo);
                 campo.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
-                campo.Nombre = ObtenerValorCelda(hojaFormato.Columns[columna][6].Value);
+                campo.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
+                campo.Posicion = new Posicion(nombreHojaFormato, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 
                 // Procesar Registros de los Campos del Formato
                 var esTipoCampoHora = campo is Hora;
@@ -173,9 +189,7 @@ namespace ConsoleApplication2
                     // ReSharper disable once UseObjectOrCollectionInitializer
                     var registro = new Registro();
                     registro.Numero = fila - 7;
-                    registro.Posicion.Hoja = nombreHoja;
-                    registro.Posicion.Columna = celda.LeftColumnIndex;
-                    registro.Posicion.Fila = celda.TopRowIndex;
+                    registro.Posicion = new Posicion(nombreHojaFormato, celda.LeftColumnIndex, celda.TopRowIndex);
                     registro.Valor = ObtenerValorCelda(celda.Value, esTipoCampoHora);
                     campo.Registros.Add(registro);
                 }
@@ -186,10 +200,20 @@ namespace ConsoleApplication2
             // Validar Formato
             var listaErrores = formato.Validar();
 
+            File.WriteAllText("formato.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
             File.WriteAllText("errores.txt", string.Join("\n", listaErrores.ToList()));
-            Console.WriteLine("\nCantidad Errores Encontrados: {0}\n", listaErrores.Count);
-            Console.WriteLine("Fin: {0:G}", DateTime.Now);
-            Console.ReadLine();
+
+            Console.WriteLine("Total de Errores Encontrados: {0}", listaErrores.Count);
+            Console.WriteLine("Criticos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Critico)));
+            Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
+            Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
+            Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
+            
+            Console.WriteLine("\nFin: {0:G}", DateTime.Now);
+
+            #if DEBUG
+                Console.ReadLine();
+            #endif
         }
     }
 }

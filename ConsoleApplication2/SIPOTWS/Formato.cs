@@ -31,11 +31,11 @@ namespace ConsoleApplication2.SIPOTWS
             var errores = new List<Error>();
 
             if (ID < 0 || ID > 99999999)
-                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                errores.Add(new Error(TipoError.Critico, new Posicion("Reporte de Formatos", 0, 2),
                     "El identificador del formato es invalido, verifique que la estructura del formato no haya sido alterada."));
 
             if (string.IsNullOrWhiteSpace(Nombre) || Nombre.Length > 4000)
-                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                errores.Add(new Error(TipoError.Critico, new Posicion("Reporte de Formatos", 0, 2),
                     "El nombre del formato es invalido, verifique que la estructura del formato no haya sido alterada."));
 
             // Validar Campos del Formato

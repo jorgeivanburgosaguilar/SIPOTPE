@@ -11,7 +11,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         {
             var error = new List<Error>
             {
-                new Error(TipoError.Critico, new Posicion(),
+                new Error(TipoError.Critico, Posicion,
                     "El tipo de campo archivo no puede ser procesado por esta aplicación, comuníquese con el área de soporte.")
             };
             return error;
@@ -31,7 +31,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         {
             var error = new List<Error>
             {
-                new Error(TipoError.Critico, new Posicion(),
+                new Error(TipoError.Critico, Posicion,
                     "El tipo de campo archivo no puede ser procesado por esta aplicación, comuníquese con el área de soporte.")
             };
             return error;

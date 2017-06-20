@@ -14,7 +14,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             Elementos = new SortedList<int, string>();
         }
 
-        // ToDo Como sacar la hoja que le corresponde al catalogo?
         public override List<Error> Validar()
         {
             var errores = new List<Error>();
@@ -22,7 +21,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             // Validacion para ver si tenemos elementos en el catalogo
             if (Elementos.Count <= 0)
             {
-                errores.Add(new Error(TipoError.Critico, new Posicion(), string.Format("No pudimos procesar el catalogo de la Columna {0}", Nombre)));
+                errores.Add(new Error(TipoError.Critico, Posicion, string.Format("No pudimos procesar el catalogo de la Columna \"{0}\"", Nombre)));
                 return errores;
             }
 
@@ -31,7 +30,8 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             foreach (var elemento in Elementos)
             {
                 if (lista.ContainsValue(elemento.Value))
-                    errores.Add(new Error(TipoError.Critico, new Posicion(string.Empty, 0, elemento.Key), "Elemento del catalogo duplicado"));
+                    errores.Add(new Error(TipoError.Critico, new Posicion(Posicion.Hoja, Posicion.Columna, elemento.Key),
+                        "Elemento del catalogo duplicado"));
                 else
                     lista.Add(elemento.Key, elemento.Value);
             }
@@ -54,7 +54,9 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 return errores;
             }
 
-            if (!Elementos.ContainsValue(valor))
+            // Se validan en minusculas los valores debido a que
+            // los catalogos no son sensibles a mayusculas y minusculas
+            if (!Elementos.ContainsValue(valor.ToLowerInvariant()))
                 errores.Add(new Error(TipoError.Grave, posicion, "El valor seleccionado no forma parte de los elementos autorizados por el catalogo."));
 
             return errores;

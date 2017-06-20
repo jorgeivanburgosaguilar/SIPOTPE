@@ -9,12 +9,14 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     {
         public int ID { get; set; }
         public string Nombre { get; set; }
+        public Posicion Posicion { get; set; }
         public List<Registro> Registros { get; set; }
 
         public Campo()
         {
             ID = 0;
             Nombre = string.Empty;
+            Posicion = new Posicion();
             Registros = new List<Registro>();
         }
 
@@ -23,11 +25,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             var errores = new List<Error>();
 
             if (ID < 0 || ID > 99999999)
-                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                errores.Add(new Error(TipoError.Critico, Posicion,
                     "El identificador del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
 
             if (string.IsNullOrWhiteSpace(Nombre) || Nombre.Length > 4000)
-                errores.Add(new Error(TipoError.Critico, new Posicion(),
+                errores.Add(new Error(TipoError.Critico, Posicion,
                     "El nombre del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
 
             // Validar Registros de los Campos
