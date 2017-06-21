@@ -14,6 +14,26 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             Elementos = new SortedList<int, string>();
         }
 
+        public override List<Error> ValidarRegistro(Registro registro)
+        {
+            var valor = registro.Valor ?? string.Empty;
+            var posicion = registro.Posicion;
+            var errores = new List<Error>();
+
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
+                return errores;
+            }
+
+            // Se validan en minusculas los valores debido a que el catalogo es procesado en minusculas,
+            // al ser estos no son sensibles a mayusculas y minusculas
+            if (!Elementos.ContainsValue(valor.ToLowerInvariant()))
+                errores.Add(new Error(TipoError.Grave, posicion, "El valor seleccionado no forma parte de los elementos autorizados por el catalogo."));
+
+            return errores;
+        }
+
         public override List<Error> Validar()
         {
             var errores = new List<Error>();
@@ -21,7 +41,10 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             // Validacion para ver si tenemos elementos en el catalogo
             if (Elementos.Count <= 0)
             {
-                errores.Add(new Error(TipoError.Critico, Posicion, string.Format("No pudimos procesar el catalogo de la Columna \"{0}\"", Nombre)));
+                errores.Add(new Error(TipoError.Critico, Posicion,
+                    string.Format(
+                        "No pudimos encontrar el catalogo de la columna \"{0}\", verifique que la estructura del formato no haya sido alterada.",
+                        Nombre)));
                 return errores;
             }
 
@@ -38,26 +61,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             // Ejecutar las validaciones de la base (ID, Nombre y Registros)
             errores.AddRange(base.Validar());
-
-            return errores;
-        }
-
-        public override List<Error> ValidarRegistro(Registro registro)
-        {
-            var valor = registro.Valor ?? string.Empty;
-            var posicion = registro.Posicion;
-            var errores = new List<Error>();
-
-            if (string.IsNullOrWhiteSpace(valor))
-            {
-                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
-                return errores;
-            }
-
-            // Se validan en minusculas los valores debido a que
-            // los catalogos no son sensibles a mayusculas y minusculas
-            if (!Elementos.ContainsValue(valor.ToLowerInvariant()))
-                errores.Add(new Error(TipoError.Grave, posicion, "El valor seleccionado no forma parte de los elementos autorizados por el catalogo."));
 
             return errores;
         }

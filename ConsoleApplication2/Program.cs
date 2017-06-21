@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,39 +14,59 @@ namespace ConsoleApplication2
 {
     public class Program
     {
+        private static int ConvertirCadenaAEntero(string cadena)
+        {
+            try
+            {
+                return string.IsNullOrWhiteSpace(cadena) ? 0 : Convert.ToInt32(cadena);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         private static string ObtenerValorCelda(CellValue valor, bool esHora = false)
         {
             if (valor == null)
                 return string.Empty;
 
-            string cadena;
-            switch (valor.Type)
+            try
             {
-                case CellValueType.Text:
-                    cadena = valor.TextValue;
-                    break;
+                string cadena;
+                switch (valor.Type)
+                {
+                    case CellValueType.Text:
+                        cadena = valor.TextValue;
+                        break;
 
-                case CellValueType.Boolean:
-                    cadena = valor.BooleanValue.ToString().ToLower();
-                    break;
+                    case CellValueType.Boolean:
+                        cadena = valor.BooleanValue.ToString().ToLower();
+                        break;
 
-                case CellValueType.Numeric:
-                    cadena = valor.NumericValue.ToString(CultureInfo.InvariantCulture);
-                    break;
+                    case CellValueType.Numeric:
+                        cadena = valor.NumericValue.ToString(CultureInfo.InvariantCulture);
+                        break;
 
-                case CellValueType.DateTime:
-                    cadena = esHora ? valor.DateTimeValue.ToString("HH:mm") : valor.DateTimeValue.ToString("dd/MM/yyyy");
-                    break;
+                    case CellValueType.DateTime:
+                        cadena = esHora ? valor.DateTimeValue.ToString("HH:mm") : valor.DateTimeValue.ToString("dd/MM/yyyy");
+                        break;
 
-                //case CellValueType.None:
-                //case CellValueType.Error:
-                //case CellValueType.Unknown:
-                default:
-                    cadena = string.Empty;
-                    break;
+                    //case CellValueType.None:
+                    //case CellValueType.Error:
+                    //case CellValueType.Unknown:
+                    default:
+                        cadena = string.Empty;
+                        break;
+                }
+
+                return cadena;
             }
-
-            return cadena;
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return string.Empty;
+            }
         }
 
         private static void ProcesarCatalogo(Campo campo, Workbook libro, DataValidation validaciones)
@@ -66,6 +87,12 @@ namespace ConsoleApplication2
             var nombreHojaCatalogo = criterio.Formula.Remove(0, 1);
             if (string.IsNullOrWhiteSpace(nombreHojaCatalogo))
                 return;
+
+            if (!libro.Worksheets.Contains(nombreHojaCatalogo))
+            {
+                Debug.WriteLine("No existe la hoja \"{0}\" del catalogo \"{1}\"", nombreHojaCatalogo, campo.Nombre);
+                return;
+            }
 
             var hojaCatalogo = libro.Worksheets[nombreHojaCatalogo];
             var rangoCatalogo = hojaCatalogo.GetDataRange();
@@ -92,6 +119,12 @@ namespace ConsoleApplication2
 
             var tabla = (Tabla) campo;
             var nombreHojaTabla = string.Format("Tabla {0}", tabla.ID);
+            if (!libro.Worksheets.Contains(nombreHojaTabla))
+            {
+                Debug.WriteLine("No existe la hoja \"{0}\" de la tabla \"{1}\"", nombreHojaTabla, campo.Nombre);
+                return;
+            }
+
             var hojaTabla = libro.Worksheets[nombreHojaTabla];
             var rangoTabla = hojaTabla.GetDataRange();
             var maximaCantidadFilas = rangoTabla.BottomRowIndex;
@@ -105,7 +138,7 @@ namespace ConsoleApplication2
                 var celdaNombreCampo = hojaTabla.Columns[columna][2];
 
                 var campoTabla = Campo.FabricarPorTipo(strIdTipoCampo, true);
-                campoTabla.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
+                campoTabla.ID = ConvertirCadenaAEntero(strIdCampo);
                 campoTabla.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
                 campoTabla.Posicion = new Posicion(nombreHojaTabla, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 
@@ -146,13 +179,22 @@ namespace ConsoleApplication2
             libro.LoadDocument(nombreLibro);
 
             const string nombreHojaFormato = "Reporte de Formatos";
+            if (!libro.Worksheets.Contains(nombreHojaFormato))
+            {
+                Console.WriteLine(
+                    "No podemos procesar este formato, no existe la hoja \"{0}\" lo que indica que la estructura del formato ha sido alterada.",
+                    nombreHojaFormato);
+                Console.WriteLine("\nFin: {0:G}", DateTime.Now);
+                Console.ReadLine();
+                return;
+            }
+
             var hojaFormato = libro.Worksheets[nombreHojaFormato];
             var rangoFormato = hojaFormato.GetDataRange();
             var maximaCantidadFilas = rangoFormato.BottomRowIndex;
             var maximaCantidadColumnas = rangoFormato.RightColumnIndex;
 
-            var strIdFormato = ObtenerValorCelda(hojaFormato.Columns[0][0].Value);
-            var idFormato = string.IsNullOrWhiteSpace(strIdFormato) ? 0 : Convert.ToInt32(strIdFormato);
+            var idFormato = ConvertirCadenaAEntero(ObtenerValorCelda(hojaFormato.Columns[0][0].Value));
             var nombreFormato = ObtenerValorCelda(hojaFormato.Columns[1][2].Value);
             var formato = new Formato(idFormato, nombreFormato);
 
@@ -164,7 +206,7 @@ namespace ConsoleApplication2
                 var celdaNombreCampo = hojaFormato.Columns[columna][6];
 
                 var campo = Campo.FabricarPorTipo(strIdTipoCampo);
-                campo.ID = string.IsNullOrWhiteSpace(strIdCampo) ? 0 : Convert.ToInt32(strIdCampo);
+                campo.ID = ConvertirCadenaAEntero(strIdCampo);
                 campo.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
                 campo.Posicion = new Posicion(nombreHojaFormato, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 

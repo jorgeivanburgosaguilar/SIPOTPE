@@ -8,14 +8,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class IdentificadorTabla : Campo
     {
-        public override List<Error> Validar()
-        {
-            // El campo IdentificadorTabla no implementa ninguna validacion
-            // en el ID o Nombre del campo, por lo que solo se validan
-            // sus registros
-            return ValidarRegistros();
-        }
-
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;
@@ -50,13 +42,21 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 else
                 {
                     if (lista.Contains(registro.Valor))
-                        errores.Add(new Error(TipoError.Grave, registro.Posicion, "El Valor del Identificador de la Tabla esta duplicado."));
+                        errores.Add(new Error(TipoError.Grave, registro.Posicion, "El Identificador de la Tabla esta duplicado."));
                     else
                         lista.Add(registro.Valor);
                 }
             }
 
             return errores;
+        }
+
+        public override List<Error> Validar()
+        {
+            // El campo IdentificadorTabla no implementa ninguna validacion
+            // en el ID o Nombre del campo, por lo que solo se validan
+            // sus registros
+            return ValidarRegistros();
         }
     }
 }

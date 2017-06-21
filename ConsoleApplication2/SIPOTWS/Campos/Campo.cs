@@ -20,24 +20,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             Registros = new List<Registro>();
         }
 
-        public virtual List<Error> Validar()
-        {
-            var errores = new List<Error>();
-
-            if (ID < 0 || ID > 99999999)
-                errores.Add(new Error(TipoError.Critico, Posicion,
-                    "El identificador del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
-
-            if (string.IsNullOrWhiteSpace(Nombre) || Nombre.Length > 4000)
-                errores.Add(new Error(TipoError.Critico, Posicion,
-                    "El nombre del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
-
-            // Validar Registros de los Campos
-            errores.AddRange(ValidarRegistros());
-
-            return errores;
-        }
-
         public virtual List<Error> ValidarRegistro(Registro registro)
         {
             return new List<Error>
@@ -57,6 +39,25 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             return errores;
         }
 
+        public virtual List<Error> Validar()
+        {
+            var errores = new List<Error>();
+
+            if (ID < 0 || ID > 99999999)
+                errores.Add(new Error(TipoError.Critico, Posicion,
+                    "El identificador del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
+
+            if (string.IsNullOrWhiteSpace(Nombre) || Nombre.Length > 4000)
+                errores.Add(new Error(TipoError.Critico, Posicion,
+                    "El nombre del campo es invalido, verifique que la estructura del formato no haya sido alterada."));
+
+            // Validar Registros de los Campos
+            errores.AddRange(ValidarRegistros());
+
+            return errores;
+        }
+
+        #region Fabricas
         public static Campo FabricarPorTipo(int idTipoCampo)
         {
             Campo campo;
@@ -147,5 +148,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 return FabricarPorTipo(0);
             }
         }
+        #endregion
     }
 }
