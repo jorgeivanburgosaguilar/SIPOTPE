@@ -49,7 +49,9 @@ namespace ConsoleApplication2
                         break;
 
                     case CellValueType.DateTime:
-                        cadena = esHora ? valor.DateTimeValue.ToString("HH:mm") : valor.DateTimeValue.ToString("dd/MM/yyyy");
+                        cadena = esHora
+                            ? valor.DateTimeValue.ToString("HH:mm", CultureInfo.InvariantCulture)
+                            : valor.DateTimeValue.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
                         break;
 
                     //case CellValueType.None:

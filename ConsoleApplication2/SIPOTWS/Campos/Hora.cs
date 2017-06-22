@@ -8,6 +8,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class Hora : Campo
     {
+        public Hora()
+        {
+            ValorPorDefecto = "00:00";
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;

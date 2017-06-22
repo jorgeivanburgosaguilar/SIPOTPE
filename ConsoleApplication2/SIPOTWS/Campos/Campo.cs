@@ -11,6 +11,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         public string Nombre { get; set; }
         public Posicion Posicion { get; set; }
         public List<Registro> Registros { get; set; }
+        public string ValorPorDefecto { get; set; }
 
         public Campo()
         {
@@ -18,6 +19,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             Nombre = string.Empty;
             Posicion = new Posicion();
             Registros = new List<Registro>();
+            ValorPorDefecto = string.Empty;
         }
 
         public virtual List<Error> ValidarRegistro(Registro registro)

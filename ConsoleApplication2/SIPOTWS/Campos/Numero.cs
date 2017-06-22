@@ -8,6 +8,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class Numero : Campo
     {
+        public Numero()
+        {
+            ValorPorDefecto = "0";
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;

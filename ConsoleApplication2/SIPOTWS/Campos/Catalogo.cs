@@ -27,7 +27,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             }
 
             // Se validan en minusculas los valores debido a que el catalogo es procesado en minusculas,
-            // al ser estos no son sensibles a mayusculas y minusculas
+            // al ser los elementos del catalogo insensibles a mayusculas y minusculas
             if (!Elementos.ContainsValue(valor.ToLowerInvariant()))
                 errores.Add(new Error(TipoError.Grave, posicion, "El valor seleccionado no forma parte de los elementos autorizados por el catalogo."));
 

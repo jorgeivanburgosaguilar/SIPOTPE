@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
@@ -8,6 +9,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     [Serializable]
     public class Anio : Campo
     {
+        public Anio()
+        {
+            ValorPorDefecto = DateTime.Now.ToString("yyyy", CultureInfo.InvariantCulture);
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;
@@ -21,7 +27,16 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             }
 
             if (!Regex.IsMatch(valor, @"\A\d{4}\Z"))
-                errores.Add(new Error(TipoError.Grave, posicion, "El año tiene un formato invalido. El año debe llenarse con 4 digitos decimales, Ejemplo: 2017"));
+            {
+                errores.Add(new Error(TipoError.Grave, posicion,
+                    "El año tiene un formato invalido. El año debe llenarse con 4 digitos decimales, Ejemplo: 2017"));
+                return errores;
+            }
+
+            // Validar que el año este entre el año 2000 y el año actual
+            var valorAnio = Convert.ToInt32(valor); // ToDo Implementar ConvertirCadenaAEntero
+            if (valorAnio < 2000 || valorAnio > DateTime.Now.Year)
+                errores.Add(new Error(TipoError.Grave, posicion, string.Format("El año debe estar entre el año 2000 y el año {0}", DateTime.Now.Year)));
 
             return errores;
         }
