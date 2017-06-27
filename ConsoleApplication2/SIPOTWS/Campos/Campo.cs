@@ -22,6 +22,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             ValorPorDefecto = string.Empty;
         }
 
+        public int CantidadRegistros
+        {
+            get { return Registros == null ? 0 : Registros.Count; }
+        }
+
         public virtual List<Error> ValidarRegistro(Registro registro)
         {
             return new List<Error>
@@ -57,6 +62,11 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             errores.AddRange(ValidarRegistros());
 
             return errores;
+        }
+
+        public virtual string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            return ValidarRegistro(registro).Count > 0 ? ValorPorDefecto : registro.Valor;
         }
 
         #region Fabricas

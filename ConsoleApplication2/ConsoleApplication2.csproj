@@ -102,6 +102,7 @@
     <Compile Include="SIPOTWS\Error.cs" />
     <Compile Include="SIPOTWS\Formato.cs" />
     <Compile Include="SIPOTWS\Campos\Campo.cs" />
+    <Compile Include="SIPOTWS\Genericos.cs" />
     <Compile Include="SIPOTWS\Posicion.cs" />
     <Compile Include="SIPOTWS\Registro.cs" />
   </ItemGroup>

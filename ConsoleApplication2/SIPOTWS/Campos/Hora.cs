@@ -21,7 +21,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Grave, posicion, "La hora no puede estar vacia"));
+                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio."));
                 return errores;
             }
 

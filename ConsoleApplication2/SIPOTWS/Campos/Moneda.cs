@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
@@ -21,17 +22,32 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Grave, posicion, "El valor monetario no puede estar vacio"));
+                errores.Add(new Error(TipoError.Advertencia, posicion, "El valor monetario no debe estar vacio"));
                 return errores;
             }
 
-            // ToDo esto valida que tenga o no 2 digitos decimales, lo que contradice a la validacion
-            // ToDo hay que poner una adecuacion para que añada esos decimales al convertir a XML
+            // Esto valida que sea un numero valido mas no que tenga 2 decimales, tomar en cuenta antes de pasarlo al XML
             if (!Regex.IsMatch(valor, @"[\-+]?[0-9]{1,12}([.][0-9]{1,2})?"))
                 errores.Add(new Error(TipoError.Grave, posicion,
-                    "El valor monetario tiene un formato incorrecto. El valor monetario debe tener un numero de maximo de 12 digitos con 2 digitos decimales opcionales, Ejemplo(s): 123456789012, 123456789012.1 y 123456789012.10"));
+                    "El valor monetario tiene un formato incorrecto. El valor monetario debe tener un numero de maximo de 12 digitos con maximo 2 digitos decimales, Ejemplos: 123456789012, 123456789012.1 y 123456789012.10"));
 
             return errores;
+        }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            if (ValidarRegistro(registro).Count > 0)
+                return ValorPorDefecto;
+
+            try
+            {
+                return string.Format("{0:0.00}", double.Parse(registro.Valor));
+            }
+            catch
+            {
+                Debug.WriteLine("Error Valor Tipo Moneda: {0}", registro.Valor);
+                return ValorPorDefecto;
+            }
         }
     }
 }

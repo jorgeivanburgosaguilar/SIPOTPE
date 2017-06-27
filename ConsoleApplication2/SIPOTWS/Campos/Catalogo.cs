@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
@@ -63,6 +64,15 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             errores.AddRange(base.Validar());
 
             return errores;
+        }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            if (ValidarRegistro(registro).Count > 0)
+                return ValorPorDefecto;
+
+            var indexValor = Elementos.IndexOfValue(registro.Valor.ToLowerInvariant());
+            return indexValor < 0 ? ValorPorDefecto : Elementos.Keys[indexValor].ToString(CultureInfo.InvariantCulture);
         }
     }
 }

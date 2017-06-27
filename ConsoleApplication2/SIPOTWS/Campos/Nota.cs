@@ -32,5 +32,15 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             return errores;
         }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            var valor = registro.Valor.Trim();
+
+            if (valor.Length > LargoMaximo)
+                valor = valor.Substring(0, LargoMaximo);
+
+            return Regex.Replace(valor, @"[^\w\d!""#$%&'()*+,\-.?¿¡@_:;Üü°Öö/\s]", "");
+        }
     }
 }

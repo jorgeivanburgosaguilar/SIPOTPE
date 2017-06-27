@@ -14,18 +14,6 @@ namespace ConsoleApplication2
 {
     public class Program
     {
-        private static int ConvertirCadenaAEntero(string cadena)
-        {
-            try
-            {
-                return string.IsNullOrWhiteSpace(cadena) ? 0 : Convert.ToInt32(cadena);
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
         private static string ObtenerValorCelda(CellValue valor, bool esHora = false)
         {
             if (valor == null)
@@ -140,7 +128,7 @@ namespace ConsoleApplication2
                 var celdaNombreCampo = hojaTabla.Columns[columna][2];
 
                 var campoTabla = Campo.FabricarPorTipo(strIdTipoCampo, true);
-                campoTabla.ID = ConvertirCadenaAEntero(strIdCampo);
+                campoTabla.ID = Genericos.ConvertirCadenaAEntero(strIdCampo);
                 campoTabla.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
                 campoTabla.Posicion = new Posicion(nombreHojaTabla, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 
@@ -196,7 +184,7 @@ namespace ConsoleApplication2
             var maximaCantidadFilas = rangoFormato.BottomRowIndex;
             var maximaCantidadColumnas = rangoFormato.RightColumnIndex;
 
-            var idFormato = ConvertirCadenaAEntero(ObtenerValorCelda(hojaFormato.Columns[0][0].Value));
+            var idFormato = Genericos.ConvertirCadenaAEntero(ObtenerValorCelda(hojaFormato.Columns[0][0].Value));
             var nombreFormato = ObtenerValorCelda(hojaFormato.Columns[1][2].Value);
             var formato = new Formato(idFormato, nombreFormato);
 
@@ -208,7 +196,7 @@ namespace ConsoleApplication2
                 var celdaNombreCampo = hojaFormato.Columns[columna][6];
 
                 var campo = Campo.FabricarPorTipo(strIdTipoCampo);
-                campo.ID = ConvertirCadenaAEntero(strIdCampo);
+                campo.ID = Genericos.ConvertirCadenaAEntero(strIdCampo);
                 campo.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
                 campo.Posicion = new Posicion(nombreHojaFormato, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
 

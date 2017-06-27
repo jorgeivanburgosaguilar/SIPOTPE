@@ -21,7 +21,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Informativo, posicion, "El texto esta vacio"));
+                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
                 return errores;
             }
 
@@ -37,6 +37,16 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                 errores.Add(new Error(TipoError.Advertencia, posicion, "El texto tiene caracteres no permitidos."));
 
             return errores;
+        }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            var valor = registro.Valor.Trim();
+
+            if (valor.Length > LargoMaximo)
+                valor = valor.Substring(0, LargoMaximo);
+
+            return Regex.Replace(valor, @"[^\w\d!""#$%&'()*+,\-.?¿¡@_:;Üü°Öö/\s]", "");
         }
     }
 }

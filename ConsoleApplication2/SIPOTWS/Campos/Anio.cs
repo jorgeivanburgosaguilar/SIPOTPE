@@ -34,11 +34,19 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             }
 
             // Validar que el año este entre el año 2000 y el año actual
-            var valorAnio = Convert.ToInt32(valor); // ToDo Implementar ConvertirCadenaAEntero
+            var valorAnio = Genericos.ConvertirCadenaAEntero(valor);
             if (valorAnio < 2000 || valorAnio > DateTime.Now.Year)
-                errores.Add(new Error(TipoError.Grave, posicion, string.Format("El año debe estar entre el año 2000 y el año {0}", DateTime.Now.Year)));
+                errores.Add(new Error(TipoError.Grave, posicion, string.Format("El año solo puede establecerse entre el año 2000 y el año {0}", DateTime.Now.Year)));
 
             return errores;
+        }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            if (ValidarRegistro(registro).Count > 0)
+                throw new Exception("El Año contiene un valor invalido");
+
+            return registro.Valor;
         }
     }
 }

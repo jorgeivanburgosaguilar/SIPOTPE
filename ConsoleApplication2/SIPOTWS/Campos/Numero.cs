@@ -21,7 +21,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Grave, posicion, "El valor numerico no puede estar vacio"));
+                errores.Add(new Error(TipoError.Advertencia, posicion, "El valor numerico no debe estar vacio"));
                 return errores;
             }
 

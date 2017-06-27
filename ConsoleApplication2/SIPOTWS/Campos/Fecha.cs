@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
@@ -25,6 +26,15 @@ namespace ConsoleApplication2.SIPOTWS.Campos
                     "La fecha tiene un formato incorrecto. Las fechas deben tener el formato Dia/Mes/Año, Ejemplo: 01/09/2017"));
 
             return errores;
+        }
+
+        public override string ObtenerValorRegistroParaXML(Registro registro)
+        {
+            if (ValidarRegistro(registro).Count > 0)
+                return ValorPorDefecto;
+
+            var dtFecha = DateTime.ParseExact(registro.Valor, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            return dtFecha.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
     }
 }
