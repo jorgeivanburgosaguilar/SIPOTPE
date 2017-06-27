@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
     [Serializable]
+    [NombresXML("fechas", "fecha")]
     public class Fecha : Campo
     {
         public override List<Error> ValidarRegistro(Registro registro)

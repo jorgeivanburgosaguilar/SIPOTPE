@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
     [Serializable]
+    [NombresXML("textosCortos", "textoCorto")]
     public class TextoCorto : Campo
     {
         public int LargoMaximo

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
     [Serializable]
+    [NombresXML("catalogos", "catalogo")]
     public class Catalogo : Campo
     {
         public SortedList<int, string> Elementos;

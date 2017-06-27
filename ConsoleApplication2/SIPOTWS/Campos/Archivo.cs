@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
     [Serializable]
+    [NombresXML("archivos", "archivo")]
     public class Archivo : Campo
     {
         private List<Error> ErrorPorDefecto()

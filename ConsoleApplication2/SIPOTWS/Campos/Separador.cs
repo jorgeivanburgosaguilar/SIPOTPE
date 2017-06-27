@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
@@ -7,6 +8,7 @@ namespace ConsoleApplication2.SIPOTWS.Campos
     /// El campo separador se procesa mas no se valida.
     /// </remarks>
     [Serializable]
+    [NombresXML("separadores", "separador")]
     public class Separador : Campo
     {
         public override List<Error> Validar()

@@ -85,6 +85,7 @@
     <Compile Include="SIPOTWS\Campos\Anio.cs" />
     <Compile Include="SIPOTWS\Campos\Archivo.cs" />
     <Compile Include="SIPOTWS\Campos\Catalogo.cs" />
+    <Compile Include="SIPOTWS\Campos\Decoradores\NombresXML.cs" />
     <Compile Include="SIPOTWS\Campos\Fecha.cs" />
     <Compile Include="SIPOTWS\Campos\FechaActualizacion.cs" />
     <Compile Include="SIPOTWS\Campos\Hora.cs" />
@@ -130,6 +131,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
