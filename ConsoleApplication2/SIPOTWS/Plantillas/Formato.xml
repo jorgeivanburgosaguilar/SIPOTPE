@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<formatos>
+    <formato>
+        <id_formato>{{ id }}</id_formato>
+        <nombre>{{ nombre }}</nombre>
+{{ campos }}
+    </formato>
+</formatos>

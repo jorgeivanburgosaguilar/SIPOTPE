@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using ConsoleApplication2.SIPOTWS.Campos;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
+using DotLiquid;
 
 namespace ConsoleApplication2.SIPOTWS
 {
@@ -24,6 +27,11 @@ namespace ConsoleApplication2.SIPOTWS
             ID = id;
             Nombre = nombre;
             Campos = new List<Campo>();
+        }
+
+        public int CantidadCampos
+        {
+            get { return Campos == null ? 0 : Campos.Count; }
         }
 
         public List<Error> Validar()
@@ -52,6 +60,33 @@ namespace ConsoleApplication2.SIPOTWS
                 errores.AddRange(campo.Validar());
 
             return errores;
+        }
+
+        public string HaciaXML()
+        {
+            var plantillaFormato = Template.Parse(File.ReadAllText("SIPOTWS/Plantillas/Formato.xml"));
+
+            var campos = new StringBuilder();
+            var maxCantidadCampos = CantidadCampos;
+            for (var i = 0; i < maxCantidadCampos; i++)
+            {
+                campos.Append(Campos[i].HaciaXML());
+
+                if (i != (maxCantidadCampos - 1))
+                    campos.Append("\n");
+            }
+
+            var formato = new StringBuilder();
+            formato.Append(plantillaFormato.Render(Hash.FromAnonymousObject(
+                new
+                {
+                    id = ID,
+                    nombre = Nombre,
+                    campos = campos.ToString()
+                }
+                )));
+
+            return formato.ToString();
         }
     }
 }

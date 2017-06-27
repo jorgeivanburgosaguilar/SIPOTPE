@@ -231,8 +231,10 @@ namespace ConsoleApplication2
 
             // Validar Formato
             var listaErrores = formato.Validar();
+            var formatoXML = formato.HaciaXML();
 
             File.WriteAllText("formato.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
+            File.WriteAllText("formato.xml", formatoXML);
             File.WriteAllText("errores.txt", string.Join("\n", listaErrores.ToList()));
 
             Console.WriteLine("Total de Errores Encontrados: {0}", listaErrores.Count);

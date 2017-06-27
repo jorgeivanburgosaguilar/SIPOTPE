@@ -25,5 +25,10 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         {
             return new List<Error>();
         }
+
+        public override string HaciaXML()
+        {
+            return string.Empty;
+        }
     }
 }

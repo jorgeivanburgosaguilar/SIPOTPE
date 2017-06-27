@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text;
 using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
 using ConsoleApplication2.SIPOTWS.Enumeradores;
+using DotLiquid;
 
 namespace ConsoleApplication2.SIPOTWS.Campos
 {
@@ -69,6 +73,44 @@ namespace ConsoleApplication2.SIPOTWS.Campos
         public virtual string ObtenerValorRegistroParaXML(Registro registro)
         {
             return ValidarRegistro(registro).Count > 0 ? ValorPorDefecto : registro.Valor;
+        }
+
+        public virtual string HaciaXML()
+        {
+            var nombresXML = (NombresXML) GetType().GetCustomAttribute(typeof (NombresXML), false);
+            var rutaPlantillaRegistro = this is Catalogo ? "SIPOTWS/Plantillas/RegistroCatalogo.xml" : "SIPOTWS/Plantillas/Registro.xml";
+            var plantillaRegistro = Template.Parse(File.ReadAllText(rutaPlantillaRegistro));
+
+            var registrosCampos = new StringBuilder();
+            var maxCantidadRegistros = CantidadRegistros;
+            for (var i = 0; i < maxCantidadRegistros; i++)
+            {
+                var registro = Registros[i];
+                registrosCampos.Append(plantillaRegistro.Render(Hash.FromAnonymousObject(
+                    new
+                    {
+                        nombre = nombresXML.Registro,
+                        valor = ObtenerValorRegistroParaXML(registro),
+                        id = ID,
+                        numero = registro.Numero,
+                        etiqueta = Nombre
+                    }
+                    )));
+
+                if (i != (maxCantidadRegistros - 1))
+                    registrosCampos.Append("\n");
+            }
+
+            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOTWS/Plantillas/Campo.xml"));
+            var campo = plantillaCampo.Render(Hash.FromAnonymousObject(
+                new
+                {
+                    nombre = nombresXML.Campo,
+                    registros = registrosCampos.ToString()
+                }
+                ));
+
+            return campo;
         }
 
         #region Fabricas
