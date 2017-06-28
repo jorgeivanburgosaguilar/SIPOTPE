@@ -78,7 +78,7 @@ namespace SIPOTPE.SIPOT.Campos
         public virtual string HaciaXML()
         {
             var nombresXML = (NombresXML) GetType().GetCustomAttribute(typeof (NombresXML), false);
-            var rutaPlantillaRegistro = this is Catalogo ? "SIPOTWS/Plantillas/RegistroCatalogo.xml" : "SIPOTWS/Plantillas/Registro.xml";
+            var rutaPlantillaRegistro = this is Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
             var plantillaRegistro = Template.Parse(File.ReadAllText(rutaPlantillaRegistro));
 
             var registrosCampos = new StringBuilder();
@@ -101,7 +101,7 @@ namespace SIPOTPE.SIPOT.Campos
                     registrosCampos.Append("\n");
             }
 
-            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOTWS/Plantillas/Campo.xml"));
+            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
             var campo = plantillaCampo.Render(Hash.FromAnonymousObject(
                 new
                 {

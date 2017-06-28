@@ -64,7 +64,7 @@ namespace SIPOTPE.SIPOT
 
         public string HaciaXML()
         {
-            var plantillaFormato = Template.Parse(File.ReadAllText("SIPOTWS/Plantillas/Formato.xml"));
+            var plantillaFormato = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Formato.xml"));
 
             var campos = new StringBuilder();
             var maxCantidadCampos = CantidadCampos;
