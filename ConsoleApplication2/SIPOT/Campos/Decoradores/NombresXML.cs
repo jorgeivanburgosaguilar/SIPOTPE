@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConsoleApplication2.SIPOTWS.Campos.Decoradores
+namespace SIPOTPE.SIPOT.Campos.Decoradores
 {
     /// <summary>
     /// Atributo que configura los nombres usados al serializar un campo con sus registros a XML

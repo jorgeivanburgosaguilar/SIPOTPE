@@ -1,4 +1,4 @@
-﻿namespace ConsoleApplication2.SIPOTWS
+﻿namespace SIPOTPE.SIPOT
 {
     public class Registro
     {

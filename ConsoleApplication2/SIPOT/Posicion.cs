@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ConsoleApplication2.SIPOTWS
+namespace SIPOTPE.SIPOT
 {
     [Serializable]
     public class Posicion

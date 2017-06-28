@@ -1,7 +1,7 @@
 ﻿using System;
-using ConsoleApplication2.SIPOTWS.Enumeradores;
+using SIPOTPE.SIPOT.Enumeradores;
 
-namespace ConsoleApplication2.SIPOTWS
+namespace SIPOTPE.SIPOT
 {
     [Serializable]
     public class Error

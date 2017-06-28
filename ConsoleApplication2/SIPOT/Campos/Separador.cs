@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Decoradores;
 
-namespace ConsoleApplication2.SIPOTWS.Campos
+namespace SIPOTPE.SIPOT.Campos
 {
     /// <remarks>
     /// El campo separador se procesa mas no se valida.

@@ -3,14 +3,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using ConsoleApplication2.SIPOTWS;
-using ConsoleApplication2.SIPOTWS.Campos;
-using ConsoleApplication2.SIPOTWS.Enumeradores;
 using DevExpress.Spreadsheet;
 using Newtonsoft.Json;
+using SIPOTPE.SIPOT;
+using SIPOTPE.SIPOT.Campos;
+using SIPOTPE.SIPOT.Enumeradores;
 using Formatting = Newtonsoft.Json.Formatting;
 
-namespace ConsoleApplication2
+namespace SIPOTPE
 {
     public class Program
     {

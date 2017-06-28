@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
-using ConsoleApplication2.SIPOTWS.Enumeradores;
+using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Enumeradores;
 
-namespace ConsoleApplication2.SIPOTWS.Campos
+namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
     [NombresXML("catalogos", "catalogo")]

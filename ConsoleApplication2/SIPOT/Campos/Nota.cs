@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using ConsoleApplication2.SIPOTWS.Campos.Decoradores;
-using ConsoleApplication2.SIPOTWS.Enumeradores;
+using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Enumeradores;
 
-namespace ConsoleApplication2.SIPOTWS.Campos
+namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("textoslargos", "textolargo")]
-    public class TextoLargo : Campo
+    [NombresXML("notas", "nota")]
+    public class Nota : Campo
     {
         public int LargoMaximo
         {
@@ -20,12 +20,6 @@ namespace ConsoleApplication2.SIPOTWS.Campos
             var valor = registro.Valor ?? string.Empty;
             var posicion = registro.Posicion;
             var errores = new List<Error>();
-
-            if (string.IsNullOrWhiteSpace(valor))
-            {
-                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
-                return errores;
-            }
 
             if (valor.Length > LargoMaximo)
                 errores.Add(new Error(TipoError.Advertencia, posicion,

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace ConsoleApplication2.SIPOTWS.Enumeradores
+namespace SIPOTPE.SIPOT.Enumeradores
 {
     public static class Extensiones
     {

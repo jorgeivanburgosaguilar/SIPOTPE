@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ConsoleApplication2.SIPOTWS
+namespace SIPOTPE.SIPOT
 {
     public static class Genericos
     {

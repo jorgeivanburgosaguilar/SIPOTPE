@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ConsoleApplication2.SIPOTWS.Campos;
-using ConsoleApplication2.SIPOTWS.Enumeradores;
 using DotLiquid;
+using SIPOTPE.SIPOT.Campos;
+using SIPOTPE.SIPOT.Enumeradores;
 
-namespace ConsoleApplication2.SIPOTWS
+namespace SIPOTPE.SIPOT
 {
     [Serializable]
     public class Formato
