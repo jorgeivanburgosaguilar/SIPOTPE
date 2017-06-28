@@ -55,9 +55,6 @@
     <ManifestCertificateThumbprint>EBABFB63762331A8DCDCE68E7FCF88ECF4E426F6</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ConsoleApplication2_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
