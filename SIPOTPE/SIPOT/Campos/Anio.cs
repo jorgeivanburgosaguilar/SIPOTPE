@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("anios", "anio")]
+    [ConfiguracionesXML("anios", "anio")]
     public class Anio : Campo
     {
         public Anio()
         {
+            Tipo = TipoCampo.Anio;
             ValorPorDefecto = DateTime.Now.ToString("yyyy", CultureInfo.InvariantCulture);
         }
 

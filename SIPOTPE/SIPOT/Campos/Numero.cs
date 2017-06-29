@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("numeros", "numero")]
+    [ConfiguracionesXML("numeros", "numero")]
     public class Numero : Campo
     {
         public Numero()
         {
+            Tipo = TipoCampo.Numero;
             ValorPorDefecto = "0";
         }
 

@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("notas", "nota")]
+    [ConfiguracionesXML("notas", "nota")]
     public class Nota : Campo
     {
         public int LargoMaximo
         {
             get { return 4000; }
+        }
+
+        public Nota()
+        {
+            Tipo = TipoCampo.Nota;
         }
 
         public override List<Error> ValidarRegistro(Registro registro)

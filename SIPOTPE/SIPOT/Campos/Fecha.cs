@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("fechas", "fecha")]
+    [ConfiguracionesXML("fechas", "fecha")]
     public class Fecha : Campo
     {
+        public Fecha()
+        {
+            Tipo = TipoCampo.Fecha;
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;

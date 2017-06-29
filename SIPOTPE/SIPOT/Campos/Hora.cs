@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("horas", "hora")]
+    [ConfiguracionesXML("horas", "hora")]
     public class Hora : Campo
     {
         public Hora()
         {
+            Tipo = TipoCampo.Hora;
             ValorPorDefecto = "00:00";
         }
 

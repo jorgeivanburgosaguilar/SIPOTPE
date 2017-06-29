@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("catalogos", "catalogo")]
+    [ConfiguracionesXML("catalogos", "catalogo")]
     public class Catalogo : Campo
     {
         public SortedList<int, string> Elementos;
 
         public Catalogo()
         {
+            Tipo = TipoCampo.Catalogo;
             Elementos = new SortedList<int, string>();
         }
 

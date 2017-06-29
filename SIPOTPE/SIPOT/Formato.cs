@@ -70,7 +70,11 @@ namespace SIPOTPE.SIPOT
             var maxCantidadCampos = CantidadCampos;
             for (var i = 0; i < maxCantidadCampos; i++)
             {
-                campos.Append(Campos[i].HaciaXML());
+                var salidaXML = Campos[i].HaciaXML();
+                if (string.IsNullOrWhiteSpace(salidaXML))
+                    continue;
+
+                campos.Append(salidaXML);
 
                 if (i != (maxCantidadCampos - 1))
                     campos.Append("\n");

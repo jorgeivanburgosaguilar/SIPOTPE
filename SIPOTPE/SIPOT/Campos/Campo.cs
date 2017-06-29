@@ -4,16 +4,17 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using DotLiquid;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("camposDesconocidos", "campoDesconocido")]
+    [ConfiguracionesXML("camposDesconocidos", "campoDesconocido")]
     public class Campo
     {
         public int ID { get; set; }
+        public TipoCampo Tipo { get; set; }
         public string Nombre { get; set; }
         public Posicion Posicion { get; set; }
         public List<Registro> Registros { get; set; }
@@ -22,6 +23,7 @@ namespace SIPOTPE.SIPOT.Campos
         public Campo()
         {
             ID = 0;
+            Tipo = TipoCampo.Desconocido;
             Nombre = string.Empty;
             Posicion = new Posicion();
             Registros = new List<Registro>();
@@ -77,8 +79,11 @@ namespace SIPOTPE.SIPOT.Campos
 
         public virtual string HaciaXML()
         {
-            var nombresXML = (NombresXML) GetType().GetCustomAttribute(typeof (NombresXML), false);
-            var rutaPlantillaRegistro = this is Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
+            var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
+            if (!configuracionesXML.Procesar)
+                return string.Empty;
+
+            var rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
             var plantillaRegistro = Template.Parse(File.ReadAllText(rutaPlantillaRegistro));
 
             var registrosCampos = new StringBuilder();
@@ -89,7 +94,7 @@ namespace SIPOTPE.SIPOT.Campos
                 registrosCampos.Append(plantillaRegistro.Render(Hash.FromAnonymousObject(
                     new
                     {
-                        nombre = nombresXML.Registro,
+                        nombre = configuracionesXML.NombreRegistro,
                         valor = ObtenerValorRegistroParaXML(registro),
                         id = ID,
                         numero = registro.Numero,
@@ -105,7 +110,7 @@ namespace SIPOTPE.SIPOT.Campos
             var campo = plantillaCampo.Render(Hash.FromAnonymousObject(
                 new
                 {
-                    nombre = nombresXML.Campo,
+                    nombre = configuracionesXML.NombreCampo,
                     registros = registrosCampos.ToString()
                 }
                 ));
@@ -114,74 +119,74 @@ namespace SIPOTPE.SIPOT.Campos
         }
 
         #region Fabricas
-        public static Campo FabricarPorTipo(int idTipoCampo)
+        public static Campo FabricarPorTipo(TipoCampo tipoCampo)
         {
             Campo campo;
 
-            switch (idTipoCampo)
+            switch (tipoCampo)
             {
-                case 1:
+                case TipoCampo.TextoCorto:
                     campo = new TextoCorto();
                     break;
 
-                case 2:
+                case TipoCampo.TextoLargo:
                     campo = new TextoLargo();
                     break;
 
-                case 3:
+                case TipoCampo.Numero:
                     campo = new Numero();
                     break;
 
-                case 4:
+                case TipoCampo.Fecha:
                     campo = new Fecha();
                     break;
 
-                case 5:
+                case TipoCampo.Hora:
                     campo = new Hora();
                     break;
 
-                case 6:
+                case TipoCampo.Moneda:
                     campo = new Moneda();
                     break;
 
-                case 7:
+                case TipoCampo.PaginaWeb:
                     campo = new PaginaWeb();
                     break;
 
-                case 8:
+                case TipoCampo.Archivo:
                     campo = new Archivo();
                     break;
 
-                case 9:
+                case TipoCampo.Catalogo:
                     campo = new Catalogo();
                     break;
 
-                case 10:
+                case TipoCampo.Tabla:
                     campo = new Tabla();
                     break;
 
-                case 11:
+                case TipoCampo.Separador:
                     campo = new Separador();
                     break;
 
-                case 12:
+                case TipoCampo.Anio:
                     campo = new Anio();
                     break;
 
-                case 13:
+                case TipoCampo.FechaActualizacion:
                     campo = new FechaActualizacion();
                     break;
 
-                case 14:
+                case TipoCampo.Nota:
                     campo = new Nota();
                     break;
 
-                // Tipo campo invalido especial para el id de la tabla
-                case -9999:
+                // Tipo campo invalido especial para el ID de la tabla
+                case TipoCampo.IdentificadorTabla:
                     campo = new IdentificadorTabla();
                     break;
 
-                //case 0:
+                //case TipoCampo.Desconocido:
                 default:
                     campo = new Campo();
                     break;
@@ -190,18 +195,26 @@ namespace SIPOTPE.SIPOT.Campos
             return campo;
         }
 
+        public static Campo FabricarPorTipo(int idTipoCampo)
+        {
+            if (!Enum.IsDefined(typeof (TipoCampo), idTipoCampo))
+                idTipoCampo = 0;
+
+            return FabricarPorTipo((TipoCampo) idTipoCampo);
+        }
+
         public static Campo FabricarPorTipo(string strIdTipoCampo, bool esTabla = false)
         {
             try
             {
                 if (esTabla && string.IsNullOrWhiteSpace(strIdTipoCampo))
-                    strIdTipoCampo = "-9999";
+                    strIdTipoCampo = "-99";
 
-                return FabricarPorTipo(string.IsNullOrWhiteSpace(strIdTipoCampo) ? 0 : Convert.ToInt32(strIdTipoCampo));
+                return FabricarPorTipo(Genericos.ConvertirCadenaAEntero(strIdTipoCampo));
             }
             catch
             {
-                return FabricarPorTipo(0);
+                return FabricarPorTipo(TipoCampo.Desconocido);
             }
         }
         #endregion

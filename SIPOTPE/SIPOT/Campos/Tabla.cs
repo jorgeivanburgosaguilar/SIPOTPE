@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("tablas", "tabla")]
+    [ConfiguracionesXML("tablas", "tabla")]
     public class Tabla : Campo
     {
         public List<Campo> Campos { get; set; }
 
         public Tabla()
         {
+            Tipo = TipoCampo.Tabla;
             Campos = new List<Campo>();
         }
 
@@ -96,6 +99,81 @@ namespace SIPOTPE.SIPOT.Campos
             errores.AddRange(base.Validar());
 
             return errores;
+        }
+
+        public override string HaciaXML()
+        {
+            var configuracionesXML = (ConfiguracionesXML)GetType().GetCustomAttribute(typeof(ConfiguracionesXML), false);
+            if (!configuracionesXML.Procesar)
+                return string.Empty;
+
+            // Aislamos los campos de la tabla por cada fila
+            var tablaPorFila = new Dictionary<int, List<Campo>>();
+            foreach (var campo in Campos)
+            {
+                foreach (var registro in campo.Registros)
+                {
+                    if (!tablaPorFila.ContainsKey(registro.Numero))
+                        tablaPorFila.Add(registro.Numero, new List<Campo>());
+
+                    var tmpCampo = FabricarPorTipo(campo.Tipo);
+                    tmpCampo.ID = campo.ID;
+                    tmpCampo.Nombre = campo.Nombre;
+                    tmpCampo.Posicion = campo.Posicion;
+                    tmpCampo.ValorPorDefecto = campo.ValorPorDefecto;
+                    tmpCampo.Registros = new List<Registro> { registro };
+
+                    if (campo.Tipo == TipoCampo.Catalogo)
+                    {
+                        var campoCatalogo = (Catalogo) campo;
+                        var tmpCampoCatalogo = (Catalogo) tmpCampo;
+                        tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
+                    }
+
+                    tablaPorFila[registro.Numero].Add(tmpCampo);
+                }
+            }
+
+            // Convertimos el IdentificadorTabla a la llave en un diccionario para mejorar
+            // el rendimiento de las busquedas en la tabla
+            // Nota: Este codigo asume que estamos procesando una tabla 100% valida
+            var tabla = new Dictionary<int, List<Campo>>();
+            foreach (var fila in tablaPorFila)
+            {
+                var campoIdentificadorTabla = fila.Value.Find(p => p is IdentificadorTabla) ?? new IdentificadorTabla();
+                var idTabla = Genericos.ConvertirCadenaAEntero(campoIdentificadorTabla.Registros[0].Valor);
+
+                if (!tabla.ContainsKey(idTabla))
+                    tabla.Add(idTabla, new List<Campo>());
+
+                // ReSharper disable once LoopCanBePartlyConvertedToQuery
+                foreach (var campo in fila.Value)
+                {
+                    if (campo is IdentificadorTabla)
+                        continue;
+
+                    tabla[idTabla].Add(campo);
+                }
+            }
+
+            var strCamposTablaXML = new StringBuilder();
+            strCamposTablaXML.Append("--- TABLA ---\n");
+            foreach (var registro in Registros)
+            {
+                var idTabla = Genericos.ConvertirCadenaAEntero(registro.Valor);
+                if (!tabla.ContainsKey(idTabla))
+                    continue;
+
+                var camposRegistro = tabla[idTabla];
+                foreach (var campo in camposRegistro)
+                {
+                    strCamposTablaXML.Append(campo.HaciaXML());
+                    strCamposTablaXML.Append("\n");
+                }
+            }
+            strCamposTablaXML.Append("--- TABLA ---\n");
+
+            return strCamposTablaXML.ToString();
         }
     }
 }

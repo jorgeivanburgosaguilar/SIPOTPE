@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("monedas", "moneda")]
+    [ConfiguracionesXML("monedas", "moneda")]
     public class Moneda : Campo
     {
         public Moneda()
         {
+            Tipo = TipoCampo.Moneda;
             ValorPorDefecto = "0.00";
         }
 

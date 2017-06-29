@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("identificadoresTablas", "identificadorTabla")]
+    [ConfiguracionesXML("identificadoresTablas", "identificadorTabla", false)]
     public class IdentificadorTabla : Campo
     {
+        public IdentificadorTabla()
+        {
+            Tipo = TipoCampo.IdentificadorTabla;
+        }
+
         public override List<Error> ValidarRegistro(Registro registro)
         {
             var valor = registro.Valor ?? string.Empty;

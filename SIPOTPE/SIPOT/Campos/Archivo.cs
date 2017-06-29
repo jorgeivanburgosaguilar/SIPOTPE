@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using SIPOTPE.SIPOT.Campos.Decoradores;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [NombresXML("archivos", "archivo")]
+    [ConfiguracionesXML("archivos", "archivo", false)]
     public class Archivo : Campo
     {
+        public Archivo()
+        {
+            Tipo = TipoCampo.Archivo;
+        }
+
         private List<Error> ErrorPorDefecto()
         {
             return new List<Error>
