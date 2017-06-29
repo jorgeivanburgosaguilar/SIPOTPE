@@ -121,6 +121,9 @@
     <Content Include="SIPOT\Plantillas\RegistroCatalogo.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SIPOT\Plantillas\RegistroTabla.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="App.config" />
     <None Include="Formato_Pruebas.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

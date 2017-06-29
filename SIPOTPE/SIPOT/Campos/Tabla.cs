@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using DotLiquid;
 using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
@@ -156,24 +158,40 @@ namespace SIPOTPE.SIPOT.Campos
                 }
             }
 
-            var strCamposTablaXML = new StringBuilder();
-            strCamposTablaXML.Append("--- TABLA ---\n");
+            var strRegistrosTabla = new StringBuilder();
+            var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroTabla.xml"));
             foreach (var registro in Registros)
             {
                 var idTabla = Genericos.ConvertirCadenaAEntero(registro.Valor);
                 if (!tabla.ContainsKey(idTabla))
                     continue;
 
+                var strCamposRegistro = new StringBuilder();
                 var camposRegistro = tabla[idTabla];
                 foreach (var campo in camposRegistro)
-                {
-                    strCamposTablaXML.Append(campo.HaciaXML());
-                    strCamposTablaXML.Append("\n");
-                }
-            }
-            strCamposTablaXML.Append("--- TABLA ---\n");
+                    strCamposRegistro.Append(campo.HaciaXML());
 
-            return strCamposTablaXML.ToString();
+                strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
+                new
+                {
+                    nombre = configuracionesXML.NombreRegistro,
+                    id = ID,
+                    numero = registro.Numero,
+                    registros = strCamposRegistro.ToString()
+                }
+                )));
+            }
+
+            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
+            var campoTabla = plantillaCampo.Render(Hash.FromAnonymousObject(
+                new
+                {
+                    nombre = configuracionesXML.NombreCampo,
+                    registros = strRegistrosTabla.ToString()
+                }
+                ));
+
+            return campoTabla;
         }
     }
 }
