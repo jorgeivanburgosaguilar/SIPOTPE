@@ -19,6 +19,7 @@ namespace SIPOTPE.SIPOT.Campos
         public Posicion Posicion { get; set; }
         public List<Registro> Registros { get; set; }
         public string ValorPorDefecto { get; set; }
+        public bool EstaDentroDeUnaTabla { get; set; }
 
         public Campo()
         {
@@ -28,6 +29,7 @@ namespace SIPOTPE.SIPOT.Campos
             Posicion = new Posicion();
             Registros = new List<Registro>();
             ValorPorDefecto = string.Empty;
+            EstaDentroDeUnaTabla = false;
         }
 
         public int CantidadRegistros
@@ -83,35 +85,53 @@ namespace SIPOTPE.SIPOT.Campos
             if (!configuracionesXML.Procesar)
                 return string.Empty;
 
-            var rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
+            string nombreCampo;
+            string nombreRegistro;
+            string rutaPlantillaRegistro;
+            string rutaPlantillaCampo;
+
+            if (EstaDentroDeUnaTabla)
+            {
+                nombreCampo = string.Format("{0}Tabla", configuracionesXML.NombreCampo);
+                nombreRegistro = string.Format("{0}Tabla", configuracionesXML.NombreRegistro);
+                rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogoTabla.xml" : "SIPOT/Plantillas/RegistroTabla.xml";
+                rutaPlantillaCampo = "SIPOT/Plantillas/CampoTabla.xml";
+            }
+            else
+            {
+                nombreCampo = configuracionesXML.NombreCampo;
+                nombreRegistro = configuracionesXML.NombreRegistro;
+                rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
+                rutaPlantillaCampo = "SIPOT/Plantillas/Campo.xml";
+            }
+
             var plantillaRegistro = Template.Parse(File.ReadAllText(rutaPlantillaRegistro));
 
-            var registrosCampos = new StringBuilder();
-            var maxCantidadRegistros = CantidadRegistros;
-            for (var i = 0; i < maxCantidadRegistros; i++)
+            var strRegistrosCampos = new StringBuilder();
+            foreach (var registro in Registros)
             {
-                var registro = Registros[i];
-                registrosCampos.Append(plantillaRegistro.Render(Hash.FromAnonymousObject(
+                strRegistrosCampos.Append(plantillaRegistro.Render(Hash.FromAnonymousObject(
                     new
                     {
-                        nombre = configuracionesXML.NombreRegistro,
+                        nombre = nombreRegistro,
                         valor = ObtenerValorRegistroParaXML(registro),
                         id = ID,
                         numero = registro.Numero,
                         etiqueta = Nombre
                     }
                     )));
-
-                if (i != (maxCantidadRegistros - 1))
-                    registrosCampos.Append("\n");
+                strRegistrosCampos.Append("\n");
             }
 
-            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
+            // Eliminar ultimo "\n"
+            strRegistrosCampos.Remove(strRegistrosCampos.Length - 1, 1);
+
+            var plantillaCampo = Template.Parse(File.ReadAllText(rutaPlantillaCampo));
             var campo = plantillaCampo.Render(Hash.FromAnonymousObject(
                 new
                 {
-                    nombre = configuracionesXML.NombreCampo,
-                    registros = registrosCampos.ToString()
+                    nombre = nombreCampo,
+                    registros = strRegistrosCampos.ToString()
                 }
                 ));
 

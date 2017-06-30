@@ -65,20 +65,21 @@ namespace SIPOTPE.SIPOT
         public string HaciaXML()
         {
             var plantillaFormato = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Formato.xml"));
+            var strCampos = new StringBuilder();
 
-            var campos = new StringBuilder();
-            var maxCantidadCampos = CantidadCampos;
-            for (var i = 0; i < maxCantidadCampos; i++)
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
+            foreach (var campo in Campos)
             {
-                var salidaXML = Campos[i].HaciaXML();
+                var salidaXML = campo.HaciaXML();
                 if (string.IsNullOrWhiteSpace(salidaXML))
                     continue;
 
-                campos.Append(salidaXML);
-
-                if (i != (maxCantidadCampos - 1))
-                    campos.Append("\n");
+                strCampos.Append(salidaXML);
+                strCampos.Append("\n");
             }
+
+            // Eliminar ultimo "\n"
+            strCampos.Remove(strCampos.Length - 1, 1);
 
             var formato = new StringBuilder();
             formato.Append(plantillaFormato.Render(Hash.FromAnonymousObject(
@@ -86,7 +87,7 @@ namespace SIPOTPE.SIPOT
                 {
                     id = ID,
                     nombre = Nombre,
-                    campos = campos.ToString()
+                    campos = strCampos.ToString()
                 }
                 )));
 

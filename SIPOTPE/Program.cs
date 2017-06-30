@@ -131,6 +131,7 @@ namespace SIPOTPE
                 campoTabla.ID = Genericos.ConvertirCadenaAEntero(strIdCampo);
                 campoTabla.Nombre = ObtenerValorCelda(celdaNombreCampo.Value);
                 campoTabla.Posicion = new Posicion(nombreHojaTabla, celdaNombreCampo.LeftColumnIndex, celdaNombreCampo.TopRowIndex);
+                campoTabla.EstaDentroDeUnaTabla = true;
 
                 // Procesar Registros de los Campos de la Tabla
                 var esTipoCampoTablaHora = campoTabla is Hora;

@@ -1,5 +1,8 @@
-﻿namespace SIPOTPE.SIPOT
+﻿using System;
+
+namespace SIPOTPE.SIPOT
 {
+    [Serializable]
     public class Registro
     {
         private string _valor;

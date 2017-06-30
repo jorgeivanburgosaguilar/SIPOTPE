@@ -1,0 +1,11 @@
+                    <{{ nombre }}>
+                        <id_campo_tabla>{{ id }}</id_campo_tabla>
+                        <opciones>
+                            <opcionTabla>
+                                <numero_registro>{{ numero }}</numero_registro>
+                                <valor>{{ valor }}</valor>
+                                <etiqueta></etiqueta>
+                            </opcionTabla>
+                        </opciones>
+                        <etiqueta>{{ etiqueta }}</etiqueta>
+                    </{{ nombre }}>

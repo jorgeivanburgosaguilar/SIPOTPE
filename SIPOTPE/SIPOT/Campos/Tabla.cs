@@ -88,7 +88,7 @@ namespace SIPOTPE.SIPOT.Campos
             {
                 errores.Add(new Error(TipoError.Critico, Posicion,
                     string.Format(
-                        "No pudimos procesar la tabla de la columna \"{0}\", verifique que la estructura del formato no haya sido alterada.",
+                        "No pudimos encontrar el identificador de la tabla para la tabla de la columna \"{0}\", verifique que la estructura del formato no haya sido alterada.",
                         Nombre)));
                 return errores;
             }
@@ -103,12 +103,8 @@ namespace SIPOTPE.SIPOT.Campos
             return errores;
         }
 
-        public override string HaciaXML()
+        private Dictionary<int, List<RegistroTabla>> ProcesarTabla()
         {
-            var configuracionesXML = (ConfiguracionesXML)GetType().GetCustomAttribute(typeof(ConfiguracionesXML), false);
-            if (!configuracionesXML.Procesar)
-                return string.Empty;
-
             // Aislamos los campos de la tabla por cada fila
             var tablaPorFila = new Dictionary<int, List<Campo>>();
             foreach (var campo in Campos)
@@ -124,11 +120,12 @@ namespace SIPOTPE.SIPOT.Campos
                     tmpCampo.Posicion = campo.Posicion;
                     tmpCampo.ValorPorDefecto = campo.ValorPorDefecto;
                     tmpCampo.Registros = new List<Registro> { registro };
+                    tmpCampo.EstaDentroDeUnaTabla = campo.EstaDentroDeUnaTabla;
 
                     if (campo.Tipo == TipoCampo.Catalogo)
                     {
-                        var campoCatalogo = (Catalogo) campo;
-                        var tmpCampoCatalogo = (Catalogo) tmpCampo;
+                        var campoCatalogo = (Catalogo)campo;
+                        var tmpCampoCatalogo = (Catalogo)tmpCampo;
                         tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
                     }
 
@@ -136,51 +133,71 @@ namespace SIPOTPE.SIPOT.Campos
                 }
             }
 
-            // Convertimos el IdentificadorTabla a la llave en un diccionario para mejorar
+            // Convertimos el IdentificadorTabla en la llave de un diccionario para mejorar
             // el rendimiento de las busquedas en la tabla
             // Nota: Este codigo asume que estamos procesando una tabla 100% valida
-            var tabla = new Dictionary<int, List<Campo>>();
-            foreach (var fila in tablaPorFila)
+            var tabla = new Dictionary<int, List<RegistroTabla>>();
+            for (var i = 0; i < tablaPorFila.Count; i++)
             {
-                var campoIdentificadorTabla = fila.Value.Find(p => p is IdentificadorTabla) ?? new IdentificadorTabla();
+                var fila = tablaPorFila[i];
+                var campoIdentificadorTabla = fila.Find(p => p is IdentificadorTabla) ?? new IdentificadorTabla();
                 var idTabla = Genericos.ConvertirCadenaAEntero(campoIdentificadorTabla.Registros[0].Valor);
 
                 if (!tabla.ContainsKey(idTabla))
-                    tabla.Add(idTabla, new List<Campo>());
+                    tabla.Add(idTabla, new List<RegistroTabla>());
 
-                // ReSharper disable once LoopCanBePartlyConvertedToQuery
-                foreach (var campo in fila.Value)
-                {
-                    if (campo is IdentificadorTabla)
-                        continue;
+                var registroTabla = new RegistroTabla(i);
+                foreach (var campo in fila.Where(campo => campo.Tipo != TipoCampo.IdentificadorTabla))
+                    registroTabla.Campos.Add(campo);
 
-                    tabla[idTabla].Add(campo);
-                }
+                tabla[idTabla].Add(registroTabla);
             }
 
+            return tabla;
+        }
+
+        public override string HaciaXML()
+        {
+            var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
+            var tabla = ProcesarTabla();
+
             var strRegistrosTabla = new StringBuilder();
-            var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroTabla.xml"));
+            var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroCampoTabla.xml"));
             foreach (var registro in Registros)
             {
                 var idTabla = Genericos.ConvertirCadenaAEntero(registro.Valor);
                 if (!tabla.ContainsKey(idTabla))
                     continue;
 
-                var strCamposRegistro = new StringBuilder();
-                var camposRegistro = tabla[idTabla];
-                foreach (var campo in camposRegistro)
-                    strCamposRegistro.Append(campo.HaciaXML());
-
-                strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
-                new
+                var registrosTabla = tabla[idTabla];
+                foreach (var registroTabla in registrosTabla)
                 {
-                    nombre = configuracionesXML.NombreRegistro,
-                    id = ID,
-                    numero = registro.Numero,
-                    registros = strCamposRegistro.ToString()
+                    var strCamposRegistroTabla = new StringBuilder();
+                    foreach (var campo in registroTabla.Campos)
+                    {
+                        strCamposRegistroTabla.Append(campo.HaciaXML());
+                        strCamposRegistroTabla.Append("\n");
+                    }
+
+                    // Eliminar ultimo "\n"
+                    strCamposRegistroTabla.Remove(strCamposRegistroTabla.Length - 1, 1);
+
+                    strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
+                        new
+                        {
+                            nombre = configuracionesXML.NombreRegistro,
+                            id = ID,
+                            numero = registroTabla.Numero,
+                            registros = strCamposRegistroTabla.ToString()
+                        }
+                        )));
+
+                    strRegistrosTabla.Append("\n");
                 }
-                )));
             }
+
+            // Eliminar ultimo "\n"
+            strRegistrosTabla.Remove(strRegistrosTabla.Length - 1, 1);
 
             var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
             var campoTabla = plantillaCampo.Render(Hash.FromAnonymousObject(

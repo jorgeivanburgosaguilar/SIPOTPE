@@ -33,31 +33,6 @@ namespace SIPOTPE.SIPOT.Campos
             return errores;
         }
 
-        public override List<Error> ValidarRegistros()
-        {
-            var errores = new List<Error>();
-
-            // Validamos los ID's duplicados de las tablas solo si el registro es valido.
-            var lista = new List<string>();
-            foreach (var registro in Registros)
-            {
-                var erroresRegistro = ValidarRegistro(registro);
-                if (erroresRegistro.Count > 0)
-                {
-                    errores.AddRange(erroresRegistro);
-                }
-                else
-                {
-                    if (lista.Contains(registro.Valor))
-                        errores.Add(new Error(TipoError.Grave, registro.Posicion, "El Identificador de la Tabla esta duplicado."));
-                    else
-                        lista.Add(registro.Valor);
-                }
-            }
-
-            return errores;
-        }
-
         public override List<Error> Validar()
         {
             // El campo IdentificadorTabla no implementa ninguna validacion
