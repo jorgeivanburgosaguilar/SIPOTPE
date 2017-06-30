@@ -159,6 +159,7 @@ namespace SIPOTPE
         static void Main(string[] args)
         {
             Console.WriteLine("Inicio: {0:G}\n", DateTime.Now);
+            var stopwatch = Stopwatch.StartNew();
 
             var argumento1 = string.Empty;
             if (args.Length > 0)
@@ -242,8 +243,10 @@ namespace SIPOTPE
             Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
             Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
             Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
-            
+
+            stopwatch.Stop();
             Console.WriteLine("\nFin: {0:G}", DateTime.Now);
+            Console.WriteLine("Tiempo transcurrido de procesamiento: {0}", stopwatch.Elapsed);
 
             #if DEBUG
                 Console.ReadLine();
