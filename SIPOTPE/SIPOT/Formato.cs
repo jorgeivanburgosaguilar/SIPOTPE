@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using DotLiquid;
 using SIPOTPE.SIPOT.Campos;
+using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
 namespace SIPOTPE.SIPOT
@@ -65,21 +69,58 @@ namespace SIPOTPE.SIPOT
         public string HaciaXML()
         {
             var plantillaFormato = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Formato.xml"));
-            var strCampos = new StringBuilder();
+            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
 
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (var campo in Campos)
+            var tiposCampo = new List<TipoCampo>();
+            foreach (var campo in Campos.Where(campo => !tiposCampo.Contains(campo.Tipo)))
+                tiposCampo.Add(campo.Tipo);
+
+            var strCamposFormato = new StringBuilder();
+            foreach (var tipoCampo in tiposCampo)
             {
-                var salidaXML = campo.HaciaXML();
-                if (string.IsNullOrWhiteSpace(salidaXML))
+                var tipoCampoActual = tipoCampo;
+
+                var configuracionesXML =
+                    Campo.FabricarPorTipo(tipoCampoActual).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
+
+                if (configuracionesXML == null)
+                {
+                    Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoCampoActual.Descripcion());
+                    continue;
+                }
+
+                if (!configuracionesXML.Procesar)
                     continue;
 
-                strCampos.Append(salidaXML);
-                strCampos.Append("\n");
+                var strCamposPorTipo = new StringBuilder();
+
+                // ReSharper disable once LoopCanBePartlyConvertedToQuery
+                foreach (var campo in Campos.Where(campo => campo.Tipo == tipoCampoActual))
+                {
+                    var salidaXML = campo.HaciaXML();
+                    if (string.IsNullOrWhiteSpace(salidaXML))
+                        continue;
+
+                    strCamposPorTipo.Append(salidaXML);
+                    strCamposPorTipo.Append("\n");
+                }
+
+                // Eliminar ultimo "\n"
+                Genericos.EliminarUltimoCaracter(strCamposPorTipo);
+
+                strCamposFormato.Append(plantillaCampo.Render(Hash.FromAnonymousObject(
+                    new
+                    {
+                        nombre = configuracionesXML.NombreCampo,
+                        registros = strCamposPorTipo.ToString()
+                    }
+                    )));
+
+                strCamposFormato.Append("\n");
             }
 
             // Eliminar ultimo "\n"
-            strCampos.Remove(strCampos.Length - 1, 1);
+            Genericos.EliminarUltimoCaracter(strCamposFormato);
 
             var formato = new StringBuilder();
             formato.Append(plantillaFormato.Render(Hash.FromAnonymousObject(
@@ -87,7 +128,7 @@ namespace SIPOTPE.SIPOT
                 {
                     id = ID,
                     nombre = Nombre,
-                    campos = strCampos.ToString()
+                    campos = strCamposFormato.ToString()
                 }
                 )));
 

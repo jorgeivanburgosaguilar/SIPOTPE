@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -159,10 +160,11 @@ namespace SIPOTPE.SIPOT.Campos
         public override string HaciaXML()
         {
             var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
-            var tabla = ProcesarTabla();
-
-            var strRegistrosTabla = new StringBuilder();
+            var plantillaCampoTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/CampoTabla.xml"));
             var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroCampoTabla.xml"));
+            var tabla = ProcesarTabla();
+            var strRegistrosTabla = new StringBuilder();
+            
             foreach (var registro in Registros)
             {
                 var idTabla = Genericos.ConvertirCadenaAEntero(registro.Valor);
@@ -172,15 +174,50 @@ namespace SIPOTPE.SIPOT.Campos
                 var registrosTabla = tabla[idTabla];
                 foreach (var registroTabla in registrosTabla)
                 {
+                    var tiposCampoRegistro = new List<TipoCampo>();
+                    foreach (var campo in registroTabla.Campos.Where(campo => !tiposCampoRegistro.Contains(campo.Tipo)))
+                        tiposCampoRegistro.Add(campo.Tipo);
+
                     var strCamposRegistroTabla = new StringBuilder();
-                    foreach (var campo in registroTabla.Campos)
+                    foreach (var tipoCampoRegistro in tiposCampoRegistro)
                     {
-                        strCamposRegistroTabla.Append(campo.HaciaXML());
+                        var tipoActualRegistro = tipoCampoRegistro;
+                        var configXMLTipoActualRegistro =
+                            FabricarPorTipo(tipoActualRegistro).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
+
+                        if (configXMLTipoActualRegistro == null)
+                        {
+                            Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoActualRegistro.Descripcion());
+                            continue;
+                        }
+
+                        if (!configXMLTipoActualRegistro.Procesar)
+                            continue;
+
+                        var strCamposRegistroPorTipo = new StringBuilder();
+                        foreach (var campo in registroTabla.Campos.Where(campo => campo.Tipo == tipoActualRegistro))
+                        {
+                            strCamposRegistroPorTipo.Append(campo.HaciaXML());
+                            strCamposRegistroPorTipo.Append("\n");
+                        }
+
+                        // Eliminar ultimo "\n"
+                        Genericos.EliminarUltimoCaracter(strCamposRegistroPorTipo);
+
+                        // Aplicar template de tipo campo tabla
+                        strCamposRegistroTabla.Append(plantillaCampoTabla.Render(Hash.FromAnonymousObject(
+                        new
+                        {
+                            nombre = string.Format("{0}Tabla", configXMLTipoActualRegistro.NombreCampo),
+                            registros = strCamposRegistroPorTipo.ToString()
+                        }
+                        )));
+
                         strCamposRegistroTabla.Append("\n");
                     }
 
                     // Eliminar ultimo "\n"
-                    strCamposRegistroTabla.Remove(strCamposRegistroTabla.Length - 1, 1);
+                    Genericos.EliminarUltimoCaracter(strCamposRegistroTabla);
 
                     strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
                         new
@@ -197,18 +234,9 @@ namespace SIPOTPE.SIPOT.Campos
             }
 
             // Eliminar ultimo "\n"
-            strRegistrosTabla.Remove(strRegistrosTabla.Length - 1, 1);
+            Genericos.EliminarUltimoCaracter(strRegistrosTabla);
 
-            var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
-            var campoTabla = plantillaCampo.Render(Hash.FromAnonymousObject(
-                new
-                {
-                    nombre = configuracionesXML.NombreCampo,
-                    registros = strRegistrosTabla.ToString()
-                }
-                ));
-
-            return campoTabla;
+            return strRegistrosTabla.ToString();
         }
     }
 }

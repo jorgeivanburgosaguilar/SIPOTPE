@@ -159,7 +159,6 @@ namespace SIPOTPE
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Inicio: {0:G}\n", DateTime.Now);
             var stopwatch = Stopwatch.StartNew();
 
             var argumento1 = string.Empty;
@@ -176,8 +175,6 @@ namespace SIPOTPE
                 Console.WriteLine(
                     "No podemos procesar este formato, no existe la hoja \"{0}\" lo que indica que la estructura del formato ha sido alterada.",
                     nombreHojaFormato);
-                Console.WriteLine("\nFin: {0:G}", DateTime.Now);
-                Console.ReadLine();
                 return;
             }
 
@@ -233,23 +230,37 @@ namespace SIPOTPE
 
             // Validar Formato
             var listaErrores = formato.Validar();
-            var formatoXML = formato.HaciaXML();
 
-            File.WriteAllText("formato.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
-            File.WriteAllText("formato.xml", formatoXML);
-            File.WriteAllText("errores.txt", string.Join("\n", listaErrores.ToList()));
+            // Revisar si tiene errores criticos el formato
+            var erroresCriticos = listaErrores.Where(p => p.Tipo.Equals(TipoError.Critico)).ToList();
+            var cantidadErroresCriticos = erroresCriticos.Count;
+            if (cantidadErroresCriticos > 0)
+            {
+                Console.WriteLine(
+                    "Se encontraron {0} {1}, verifique que la estructura del formato no haya sido alterada.",
+                    cantidadErroresCriticos, cantidadErroresCriticos > 1 ? "errores criticos" : "error critico");
+                File.WriteAllText("errores.txt", string.Join("\n", erroresCriticos));
+            }
+            else
+            {
+                Console.WriteLine("Total de Errores Encontrados: {0}", listaErrores.Count);
+                Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
+                Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
+                Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
 
-            Console.WriteLine("Total de Errores Encontrados: {0}", listaErrores.Count);
-            Console.WriteLine("Criticos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Critico)));
-            Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
-            Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
-            Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
+                // Generar formato XML
+                var formatoXML = formato.HaciaXML();
+
+                File.WriteAllText("formato.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
+                File.WriteAllText("formato.xml", formatoXML);
+                File.WriteAllText("errores.txt", string.Join("\n", listaErrores));
+            }
 
             stopwatch.Stop();
-            Console.WriteLine("\nFin: {0:G}", DateTime.Now);
             Console.WriteLine("Tiempo transcurrido de procesamiento: {0}", stopwatch.Elapsed);
 
             #if DEBUG
+                Console.WriteLine("\nPulse cualquier tecla para finalizar");
                 Console.ReadLine();
             #endif
         }

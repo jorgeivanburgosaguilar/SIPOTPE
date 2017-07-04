@@ -85,28 +85,21 @@ namespace SIPOTPE.SIPOT.Campos
             if (!configuracionesXML.Procesar)
                 return string.Empty;
 
-            string nombreCampo;
             string nombreRegistro;
             string rutaPlantillaRegistro;
-            string rutaPlantillaCampo;
 
             if (EstaDentroDeUnaTabla)
             {
-                nombreCampo = string.Format("{0}Tabla", configuracionesXML.NombreCampo);
                 nombreRegistro = string.Format("{0}Tabla", configuracionesXML.NombreRegistro);
                 rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogoTabla.xml" : "SIPOT/Plantillas/RegistroTabla.xml";
-                rutaPlantillaCampo = "SIPOT/Plantillas/CampoTabla.xml";
             }
             else
             {
-                nombreCampo = configuracionesXML.NombreCampo;
                 nombreRegistro = configuracionesXML.NombreRegistro;
                 rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogo.xml" : "SIPOT/Plantillas/Registro.xml";
-                rutaPlantillaCampo = "SIPOT/Plantillas/Campo.xml";
             }
 
             var plantillaRegistro = Template.Parse(File.ReadAllText(rutaPlantillaRegistro));
-
             var strRegistrosCampos = new StringBuilder();
             foreach (var registro in Registros)
             {
@@ -124,18 +117,9 @@ namespace SIPOTPE.SIPOT.Campos
             }
 
             // Eliminar ultimo "\n"
-            strRegistrosCampos.Remove(strRegistrosCampos.Length - 1, 1);
+            Genericos.EliminarUltimoCaracter(strRegistrosCampos);
 
-            var plantillaCampo = Template.Parse(File.ReadAllText(rutaPlantillaCampo));
-            var campo = plantillaCampo.Render(Hash.FromAnonymousObject(
-                new
-                {
-                    nombre = nombreCampo,
-                    registros = strRegistrosCampos.ToString()
-                }
-                ));
-
-            return campo;
+            return strRegistrosCampos.ToString();
         }
 
         #region Fabricas

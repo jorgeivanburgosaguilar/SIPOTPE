@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace SIPOTPE.SIPOT
 {
@@ -14,6 +15,15 @@ namespace SIPOTPE.SIPOT
             {
                 return 0;
             }
+        }
+
+        public static void EliminarUltimoCaracter(StringBuilder cadena)
+        {
+            var largoCadena = cadena.Length;
+            if (largoCadena <= 0)
+                return;
+
+            cadena.Remove(largoCadena - 1, 1);
         }
     }
 }
