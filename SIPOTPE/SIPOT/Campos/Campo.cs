@@ -10,7 +10,7 @@ using SIPOTPE.SIPOT.Enumeradores;
 namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
-    [ConfiguracionesXML("camposDesconocidos", "campoDesconocido")]
+    [ConfiguracionesXML("camposDesconocidos", "campoDesconocido", false)]
     public class Campo
     {
         public int ID { get; set; }

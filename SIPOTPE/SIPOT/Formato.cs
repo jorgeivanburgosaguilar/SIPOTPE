@@ -70,10 +70,7 @@ namespace SIPOTPE.SIPOT
         {
             var plantillaFormato = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Formato.xml"));
             var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
-
-            var tiposCampo = new List<TipoCampo>();
-            foreach (var campo in Campos.Where(campo => !tiposCampo.Contains(campo.Tipo)))
-                tiposCampo.Add(campo.Tipo);
+            var tiposCampo = Enum.GetValues(typeof (TipoCampo)).Cast<TipoCampo>().ToList();
 
             var strCamposFormato = new StringBuilder();
             foreach (var tipoCampo in tiposCampo)
@@ -85,11 +82,14 @@ namespace SIPOTPE.SIPOT
 
                 if (configuracionesXML == null)
                 {
-                    Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoCampoActual.Descripcion());
+                    Debug.WriteLine("Error al obtener las configuraciones xml de {0}", tipoCampoActual.Descripcion());
                     continue;
                 }
 
                 if (!configuracionesXML.Procesar)
+                    continue;
+
+                if (Campos.Count(campo => campo.Tipo.Equals(tipoCampoActual)) <= 0)
                     continue;
 
                 var strCamposPorTipo = new StringBuilder();

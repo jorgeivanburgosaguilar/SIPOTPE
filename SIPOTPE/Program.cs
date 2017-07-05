@@ -98,7 +98,7 @@ namespace SIPOTPE
                 // Los elementos del catalogo se insertan en minusculas
                 // para resolver el problema de que los elementos del catalogo
                 // no son sensibles a mayusculas y minusculas.
-                catalogo.Elementos.Add(fila, ObtenerValorCelda(celda.Value).ToLowerInvariant());
+                catalogo.Elementos.Add(fila, ObtenerValorCelda(celda.Value).Trim().ToLowerInvariant());
             }
         }
 

@@ -9,7 +9,7 @@ namespace SIPOTPE.SIPOT
         {
             try
             {
-                return string.IsNullOrWhiteSpace(cadena) ? 0 : Convert.ToInt32(cadena);
+                return string.IsNullOrWhiteSpace(cadena) ? 0 : Convert.ToInt32(cadena.Trim());
             }
             catch
             {

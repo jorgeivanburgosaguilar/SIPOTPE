@@ -32,7 +32,7 @@ namespace SIPOTPE.SIPOT.Campos
 
             // Se validan en minusculas los valores debido a que el catalogo es procesado en minusculas,
             // al ser los elementos del catalogo insensibles a mayusculas y minusculas
-            if (!Elementos.ContainsValue(valor.ToLowerInvariant()))
+            if (!Elementos.ContainsValue(valor.Trim().ToLowerInvariant()))
                 errores.Add(new Error(TipoError.Grave, posicion, "El valor seleccionado no forma parte de los elementos autorizados por el catalogo."));
 
             return errores;
@@ -74,7 +74,8 @@ namespace SIPOTPE.SIPOT.Campos
             if (ValidarRegistro(registro).Count > 0)
                 return ValorPorDefecto;
 
-            var indexValor = Elementos.IndexOfValue(registro.Valor.ToLowerInvariant());
+            var valor = registro.Valor.Trim().ToLowerInvariant();
+            var indexValor = Elementos.IndexOfValue(valor);
             return indexValor < 0 ? ValorPorDefecto : Elementos.Keys[indexValor].ToString(CultureInfo.InvariantCulture);
         }
     }

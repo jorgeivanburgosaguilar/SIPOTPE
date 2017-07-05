@@ -162,6 +162,7 @@ namespace SIPOTPE.SIPOT.Campos
             var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
             var plantillaCampoTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/CampoTabla.xml"));
             var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroCampoTabla.xml"));
+            var tiposCampo = Enum.GetValues(typeof(TipoCampo)).Cast<TipoCampo>().ToList();
             var tabla = ProcesarTabla();
             var strRegistrosTabla = new StringBuilder();
             
@@ -174,28 +175,28 @@ namespace SIPOTPE.SIPOT.Campos
                 var registrosTabla = tabla[idTabla];
                 foreach (var registroTabla in registrosTabla)
                 {
-                    var tiposCampoRegistro = new List<TipoCampo>();
-                    foreach (var campo in registroTabla.Campos.Where(campo => !tiposCampoRegistro.Contains(campo.Tipo)))
-                        tiposCampoRegistro.Add(campo.Tipo);
-
                     var strCamposRegistroTabla = new StringBuilder();
-                    foreach (var tipoCampoRegistro in tiposCampoRegistro)
+                    foreach (var tipoCampoRegistro in tiposCampo)
                     {
-                        var tipoActualRegistro = tipoCampoRegistro;
+                        var tipoCampoRegistroActual = tipoCampoRegistro;
+
                         var configXMLTipoActualRegistro =
-                            FabricarPorTipo(tipoActualRegistro).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
+                            FabricarPorTipo(tipoCampoRegistroActual).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
 
                         if (configXMLTipoActualRegistro == null)
                         {
-                            Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoActualRegistro.Descripcion());
+                            Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoCampoRegistroActual.Descripcion());
                             continue;
                         }
 
                         if (!configXMLTipoActualRegistro.Procesar)
                             continue;
 
+                        if (registroTabla.Campos.Count(campo => campo.Tipo.Equals(tipoCampoRegistroActual)) <= 0)
+                            continue;
+
                         var strCamposRegistroPorTipo = new StringBuilder();
-                        foreach (var campo in registroTabla.Campos.Where(campo => campo.Tipo == tipoActualRegistro))
+                        foreach (var campo in registroTabla.Campos.Where(campo => campo.Tipo == tipoCampoRegistroActual))
                         {
                             strCamposRegistroPorTipo.Append(campo.HaciaXML());
                             strCamposRegistroPorTipo.Append("\n");
