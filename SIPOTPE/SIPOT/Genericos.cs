@@ -5,15 +5,15 @@ namespace SIPOTPE.SIPOT
 {
     public static class Genericos
     {
-        public static int ConvertirCadenaAEntero(string cadena)
+        public static int ConvertirCadenaAEntero(string cadena, int valorPorDefecto = 0)
         {
             try
             {
-                return string.IsNullOrWhiteSpace(cadena) ? 0 : Convert.ToInt32(cadena.Trim());
+                return string.IsNullOrWhiteSpace(cadena.Trim()) ? valorPorDefecto : Convert.ToInt32(cadena.Trim());
             }
             catch
             {
-                return 0;
+                return valorPorDefecto;
             }
         }
 

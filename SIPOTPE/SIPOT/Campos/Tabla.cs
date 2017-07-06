@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using DotLiquid;
+using Newtonsoft.Json;
 using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
@@ -18,10 +19,16 @@ namespace SIPOTPE.SIPOT.Campos
     {
         public List<Campo> Campos { get; set; }
 
+        public int ValorPorDefectoEntero
+        {
+            get { return Genericos.ConvertirCadenaAEntero(ValorPorDefecto); }
+        }
+
         public Tabla()
         {
             Tipo = TipoCampo.Tabla;
             Campos = new List<Campo>();
+            ValorPorDefecto = "-9999";
         }
 
         public override List<Error> ValidarRegistro(Registro registro)
@@ -104,9 +111,14 @@ namespace SIPOTPE.SIPOT.Campos
             return errores;
         }
 
-        private Dictionary<int, List<RegistroTabla>> ProcesarTabla()
+        /// <summary>
+        /// Convierte la tabla de un conjunto de campos a un diccionario de elementos
+        /// campo clasificados por ID en una relacion 1 a muchos registros.
+        /// </summary>
+        /// <remarks>Este codigo asume que estamos procesando una tabla 100% valida</remarks>
+        private Dictionary<int, List<Campo>> ProcesarTabla()
         {
-            // Aislamos los campos de la tabla por cada fila
+            // Aislamos los camposde la tabla por cada fila
             var tablaPorFila = new Dictionary<int, List<Campo>>();
             foreach (var campo in Campos)
             {
@@ -125,34 +137,113 @@ namespace SIPOTPE.SIPOT.Campos
 
                     if (campo.Tipo == TipoCampo.Catalogo)
                     {
-                        var campoCatalogo = (Catalogo)campo;
-                        var tmpCampoCatalogo = (Catalogo)tmpCampo;
+                        var campoCatalogo = (Catalogo) campo;
+                        var tmpCampoCatalogo = (Catalogo) tmpCampo;
                         tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
+                    }
+
+                    if (campo.Tipo == TipoCampo.Tabla)
+                    {
+                        var campoTabla = (Tabla) campo;
+                        var tmpCampoTabla = (Tabla) tmpCampo;
+                        tmpCampoTabla.Campos = campoTabla.Campos;
                     }
 
                     tablaPorFila[registro.Numero].Add(tmpCampo);
                 }
             }
 
-            // Convertimos el IdentificadorTabla en la llave de un diccionario para mejorar
-            // el rendimiento de las busquedas en la tabla
-            // Nota: Este codigo asume que estamos procesando una tabla 100% valida
-            var tabla = new Dictionary<int, List<RegistroTabla>>();
+            // Convertimos la tabla por filas en un diccionario de Registros Tabla
+            // donde el ID de la tabla es la llave
+            var tablaPorID = new Dictionary<int, List<RegistroTabla>>();
             for (var i = 0; i < tablaPorFila.Count; i++)
             {
                 var fila = tablaPorFila[i];
-                var campoIdentificadorTabla = fila.Find(p => p is IdentificadorTabla) ?? new IdentificadorTabla();
+                var campoIdentificadorTabla = fila.Find(p => p.Tipo.Equals(TipoCampo.IdentificadorTabla)) ?? new IdentificadorTabla();
                 var idTabla = Genericos.ConvertirCadenaAEntero(campoIdentificadorTabla.Registros[0].Valor);
 
-                if (!tabla.ContainsKey(idTabla))
-                    tabla.Add(idTabla, new List<RegistroTabla>());
+                if (!tablaPorID.ContainsKey(idTabla))
+                    tablaPorID.Add(idTabla, new List<RegistroTabla>());
 
                 var registroTabla = new RegistroTabla(i);
                 foreach (var campo in fila.Where(campo => campo.Tipo != TipoCampo.IdentificadorTabla))
                     registroTabla.Campos.Add(campo);
 
-                tabla[idTabla].Add(registroTabla);
+                tablaPorID[idTabla].Add(registroTabla);
             }
+
+            // Unificamos los registros de los campos con el mismo ID de campo
+            // por cada ID de la tabla
+            var tabla = new Dictionary<int, List<Campo>>();
+            foreach (var registroTablaPorID in tablaPorID)
+            {
+                var camposTabla = new List<Campo>();
+                foreach (var registroTabla in registroTablaPorID.Value)
+                {
+                    foreach (var campoRegistroTabla in registroTabla.Campos)
+                    {
+                        var tmpCampo = camposTabla.Find(c => c.ID.Equals(campoRegistroTabla.ID));
+                        if (tmpCampo == null)
+                        {
+                            camposTabla.Add(campoRegistroTabla);
+                            continue;
+                        }
+
+                        tmpCampo.Registros.AddRange(campoRegistroTabla.Registros);
+                    }
+                }
+
+                tabla.Add(registroTablaPorID.Key, camposTabla);
+            }
+
+            // Generamos una "fila" de campos tabla vacio
+            var camposTablaVacio = new List<Campo>();
+            foreach (var campo in Campos)
+            {
+                if (campo.Tipo == TipoCampo.IdentificadorTabla)
+                    continue;
+
+                var tmpCampo = FabricarPorTipo(campo.Tipo);
+                tmpCampo.ID = campo.ID;
+                tmpCampo.Nombre = campo.Nombre;
+                tmpCampo.Posicion = campo.Posicion;
+                tmpCampo.ValorPorDefecto = campo.ValorPorDefecto;
+                tmpCampo.EstaDentroDeUnaTabla = campo.EstaDentroDeUnaTabla;
+
+                var tmpCampoRegistro = new Registro
+                {
+                    Posicion = campo.Posicion
+                };
+                tmpCampo.Registros.Add(tmpCampoRegistro);
+
+
+                if (campo.Tipo == TipoCampo.Catalogo)
+                {
+                    var campoCatalogo = (Catalogo) campo;
+                    var tmpCampoCatalogo = (Catalogo) tmpCampo;
+                    tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
+                }
+
+                if (campo.Tipo == TipoCampo.Tabla)
+                {
+                    var campoTabla = (Tabla) campo;
+                    var tmpCampoTabla = (Tabla) tmpCampo;
+                    tmpCampoTabla.Campos = campoTabla.Campos;
+                }
+
+                camposTablaVacio.Add(tmpCampo);
+            }
+
+            // Insertamos la fila de campos vacios de la tabla en el registro con el ID "-9999"
+            // para hacer referencia a los registros vacios, los cuales retornan este ValorPorDefecto
+            // al ser considerados invalidos.
+            tabla.Add(ValorPorDefectoEntero, camposTablaVacio);
+
+            #if DEBUG
+                File.WriteAllText(string.Format("tablaPorFila_{0}.json", ID), JsonConvert.SerializeObject(tablaPorFila, Formatting.Indented));
+                File.WriteAllText(string.Format("tablaPorID_{0}.json", ID), JsonConvert.SerializeObject(tablaPorID, Formatting.Indented));
+                File.WriteAllText(string.Format("tabla_{0}.json", ID), JsonConvert.SerializeObject(tabla, Formatting.Indented));
+            #endif
 
             return tabla;
         }
@@ -166,72 +257,73 @@ namespace SIPOTPE.SIPOT.Campos
             var tabla = ProcesarTabla();
             var strRegistrosTabla = new StringBuilder();
             
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var registro in Registros)
             {
-                var idTabla = Genericos.ConvertirCadenaAEntero(registro.Valor);
+                var valor = ObtenerValorRegistroParaXML(registro);
+                var idTabla = Genericos.ConvertirCadenaAEntero(valor, ValorPorDefectoEntero);
                 if (!tabla.ContainsKey(idTabla))
-                    continue;
-
-                var registrosTabla = tabla[idTabla];
-                foreach (var registroTabla in registrosTabla)
                 {
-                    var strCamposRegistroTabla = new StringBuilder();
-                    foreach (var tipoCampoRegistro in tiposCampo)
+                    Debug.WriteLine("ID de la tabla \"{0}\" no existe al convertir a XML: {1}", Nombre, idTabla);
+                    continue;
+                }
+
+                var camposTabla = tabla[idTabla];
+                var strCamposTabla = new StringBuilder();
+                foreach (var tipoCampo in tiposCampo)
+                {
+                    var tipoCampoActual = tipoCampo;
+                    var configXMLTipoCampo =
+                        FabricarPorTipo(tipoCampoActual).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
+
+                    if (configXMLTipoCampo == null)
                     {
-                        var tipoCampoRegistroActual = tipoCampoRegistro;
+                        Debug.WriteLine("Error al obtener configuraciones xml del tipo de campo \"{0}\"", tipoCampoActual.Descripcion());
+                        continue;
+                    }
 
-                        var configXMLTipoActualRegistro =
-                            FabricarPorTipo(tipoCampoRegistroActual).GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false) as ConfiguracionesXML;
+                    if (!configXMLTipoCampo.Procesar)
+                        continue;
 
-                        if (configXMLTipoActualRegistro == null)
-                        {
-                            Debug.WriteLine("Error al obtener configuraciones xml de {0}", tipoCampoRegistroActual.Descripcion());
-                            continue;
-                        }
+                    if (camposTabla.Count(c => c.Tipo.Equals(tipoCampoActual)) <= 0)
+                        continue;
 
-                        if (!configXMLTipoActualRegistro.Procesar)
-                            continue;
+                    var strCamposRegistroPorTipo = new StringBuilder();
+                    foreach (var campo in camposTabla.Where(c => c.Tipo == tipoCampoActual))
+                    {
+                        strCamposRegistroPorTipo.Append(campo.HaciaXML());
+                        strCamposRegistroPorTipo.Append("\n");
+                    }
 
-                        if (registroTabla.Campos.Count(campo => campo.Tipo.Equals(tipoCampoRegistroActual)) <= 0)
-                            continue;
+                    // Eliminar ultimo "\n"
+                    Genericos.EliminarUltimoCaracter(strCamposRegistroPorTipo);
 
-                        var strCamposRegistroPorTipo = new StringBuilder();
-                        foreach (var campo in registroTabla.Campos.Where(campo => campo.Tipo == tipoCampoRegistroActual))
-                        {
-                            strCamposRegistroPorTipo.Append(campo.HaciaXML());
-                            strCamposRegistroPorTipo.Append("\n");
-                        }
-
-                        // Eliminar ultimo "\n"
-                        Genericos.EliminarUltimoCaracter(strCamposRegistroPorTipo);
-
-                        // Aplicar template de tipo campo tabla
-                        strCamposRegistroTabla.Append(plantillaCampoTabla.Render(Hash.FromAnonymousObject(
+                    // Aplicar template de tipo campo tabla
+                    strCamposTabla.Append(plantillaCampoTabla.Render(Hash.FromAnonymousObject(
                         new
                         {
-                            nombre = string.Format("{0}Tabla", configXMLTipoActualRegistro.NombreCampo),
+                            nombre = string.Format("{0}Tabla", configXMLTipoCampo.NombreCampo),
                             registros = strCamposRegistroPorTipo.ToString()
                         }
                         )));
 
-                        strCamposRegistroTabla.Append("\n");
-                    }
-
-                    // Eliminar ultimo "\n"
-                    Genericos.EliminarUltimoCaracter(strCamposRegistroTabla);
-
-                    strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
-                        new
-                        {
-                            nombre = configuracionesXML.NombreRegistro,
-                            id = ID,
-                            numero = registroTabla.Numero,
-                            registros = strCamposRegistroTabla.ToString()
-                        }
-                        )));
-
-                    strRegistrosTabla.Append("\n");
+                    strCamposTabla.Append("\n");
                 }
+
+                // Eliminar ultimo "\n"
+                Genericos.EliminarUltimoCaracter(strCamposTabla);
+
+                strRegistrosTabla.Append(plantillaRegistroTabla.Render(Hash.FromAnonymousObject(
+                    new
+                    {
+                        nombre = configuracionesXML.NombreRegistro,
+                        id = ID,
+                        numero = registro.Numero,
+                        registros = strCamposTabla.ToString()
+                    }
+                    )));
+
+                strRegistrosTabla.Append("\n");
             }
 
             // Eliminar ultimo "\n"
