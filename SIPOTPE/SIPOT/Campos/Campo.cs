@@ -11,7 +11,7 @@ namespace SIPOTPE.SIPOT.Campos
 {
     [Serializable]
     [ConfiguracionesXML("camposDesconocidos", "campoDesconocido", false)]
-    public class Campo
+    public class Campo : ICloneable
     {
         public int ID { get; set; }
         public TipoCampo Tipo { get; set; }
@@ -120,6 +120,26 @@ namespace SIPOTPE.SIPOT.Campos
             Genericos.EliminarUltimoCaracter(strRegistrosCampos);
 
             return strRegistrosCampos.ToString();
+        }
+
+        /// <summary>
+        /// Clona un objeto
+        /// </summary>
+        /// <remarks>No incluye los registros</remarks>
+        public virtual Campo Clonar()
+        {
+            var tmpCampo = FabricarPorTipo(Tipo);
+            tmpCampo.ID = ID;
+            tmpCampo.Nombre = Nombre;
+            tmpCampo.Posicion = new Posicion(Posicion.Hoja, Posicion.Columna, Posicion.Fila);
+            tmpCampo.ValorPorDefecto = ValorPorDefecto;
+            tmpCampo.EstaDentroDeUnaTabla = EstaDentroDeUnaTabla;
+            return tmpCampo;
+        }
+
+        public object Clone()
+        {
+            return Clonar();
         }
 
         #region Fabricas

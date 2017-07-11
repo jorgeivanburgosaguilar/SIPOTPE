@@ -78,5 +78,13 @@ namespace SIPOTPE.SIPOT.Campos
             var indexValor = Elementos.IndexOfValue(valor);
             return indexValor < 0 ? ValorPorDefecto : Elementos.Keys[indexValor].ToString(CultureInfo.InvariantCulture);
         }
+
+        public override Campo Clonar()
+        {
+            var tmpCampo = base.Clonar();
+            var tmpCatalogo = (Catalogo) tmpCampo;
+            tmpCatalogo.Elementos = Elementos;
+            return tmpCatalogo;
+        }
     }
 }

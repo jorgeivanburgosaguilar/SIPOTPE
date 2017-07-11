@@ -118,7 +118,7 @@ namespace SIPOTPE.SIPOT.Campos
         /// <remarks>Este codigo asume que estamos procesando una tabla 100% valida</remarks>
         private Dictionary<int, List<Campo>> ProcesarTabla()
         {
-            // Aislamos los camposde la tabla por cada fila
+            // Aislamos cada campo de la tabla (con su registro) por fila
             var tablaPorFila = new Dictionary<int, List<Campo>>();
             foreach (var campo in Campos)
             {
@@ -127,33 +127,13 @@ namespace SIPOTPE.SIPOT.Campos
                     if (!tablaPorFila.ContainsKey(registro.Numero))
                         tablaPorFila.Add(registro.Numero, new List<Campo>());
 
-                    var tmpCampo = FabricarPorTipo(campo.Tipo);
-                    tmpCampo.ID = campo.ID;
-                    tmpCampo.Nombre = campo.Nombre;
-                    tmpCampo.Posicion = campo.Posicion;
-                    tmpCampo.ValorPorDefecto = campo.ValorPorDefecto;
+                    var tmpCampo = campo.Clonar();
                     tmpCampo.Registros = new List<Registro> { registro };
-                    tmpCampo.EstaDentroDeUnaTabla = campo.EstaDentroDeUnaTabla;
-
-                    if (campo.Tipo == TipoCampo.Catalogo)
-                    {
-                        var campoCatalogo = (Catalogo) campo;
-                        var tmpCampoCatalogo = (Catalogo) tmpCampo;
-                        tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
-                    }
-
-                    if (campo.Tipo == TipoCampo.Tabla)
-                    {
-                        var campoTabla = (Tabla) campo;
-                        var tmpCampoTabla = (Tabla) tmpCampo;
-                        tmpCampoTabla.Campos = campoTabla.Campos;
-                    }
-
                     tablaPorFila[registro.Numero].Add(tmpCampo);
                 }
             }
 
-            // Convertimos la tabla por filas en un diccionario de Registros Tabla
+            // Convertimos la tabla por filas en un diccionario de RegistrosTabla
             // donde el ID de la tabla es la llave
             var tablaPorID = new Dictionary<int, List<RegistroTabla>>();
             for (var i = 0; i < tablaPorFila.Count; i++)
@@ -203,34 +183,13 @@ namespace SIPOTPE.SIPOT.Campos
                 if (campo.Tipo == TipoCampo.IdentificadorTabla)
                     continue;
 
-                var tmpCampo = FabricarPorTipo(campo.Tipo);
-                tmpCampo.ID = campo.ID;
-                tmpCampo.Nombre = campo.Nombre;
-                tmpCampo.Posicion = campo.Posicion;
-                tmpCampo.ValorPorDefecto = campo.ValorPorDefecto;
-                tmpCampo.EstaDentroDeUnaTabla = campo.EstaDentroDeUnaTabla;
-
+                var tmpCampo = campo.Clonar();
                 var tmpCampoRegistro = new Registro
                 {
-                    Posicion = campo.Posicion
+                    Posicion = tmpCampo.Posicion
                 };
+
                 tmpCampo.Registros.Add(tmpCampoRegistro);
-
-
-                if (campo.Tipo == TipoCampo.Catalogo)
-                {
-                    var campoCatalogo = (Catalogo) campo;
-                    var tmpCampoCatalogo = (Catalogo) tmpCampo;
-                    tmpCampoCatalogo.Elementos = campoCatalogo.Elementos;
-                }
-
-                if (campo.Tipo == TipoCampo.Tabla)
-                {
-                    var campoTabla = (Tabla) campo;
-                    var tmpCampoTabla = (Tabla) tmpCampo;
-                    tmpCampoTabla.Campos = campoTabla.Campos;
-                }
-
                 camposTablaVacio.Add(tmpCampo);
             }
 
@@ -330,6 +289,14 @@ namespace SIPOTPE.SIPOT.Campos
             Genericos.EliminarUltimoCaracter(strRegistrosTabla);
 
             return strRegistrosTabla.ToString();
+        }
+
+        public override Campo Clonar()
+        {
+            var tmpCampo = base.Clonar();
+            var tmpTabla = (Tabla) tmpCampo;
+            tmpTabla.Campos = Campos;
+            return tmpTabla;
         }
     }
 }

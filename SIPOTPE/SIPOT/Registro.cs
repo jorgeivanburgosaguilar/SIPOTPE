@@ -22,5 +22,10 @@ namespace SIPOTPE.SIPOT
             Posicion = new Posicion();
             Valor = string.Empty;
         }
+
+        public override string ToString()
+        {
+            return Valor;
+        }
     }
 }

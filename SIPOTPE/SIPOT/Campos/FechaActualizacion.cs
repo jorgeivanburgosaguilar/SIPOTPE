@@ -14,6 +14,7 @@ namespace SIPOTPE.SIPOT.Campos
         public FechaActualizacion()
         {
             Tipo = TipoCampo.FechaActualizacion;
+            ValorPorDefecto = DateTime.Now.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
         }
 
         public override List<Error> ValidarRegistro(Registro registro)
@@ -24,7 +25,7 @@ namespace SIPOTPE.SIPOT.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Informativo, posicion, "El registro esta vacio"));
+                errores.Add(new Error(TipoError.Critico, posicion, "La fecha de actualización no puede estar vacia"));
                 return errores;
             }
 

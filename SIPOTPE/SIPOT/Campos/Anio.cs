@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
@@ -25,7 +26,7 @@ namespace SIPOTPE.SIPOT.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Grave, posicion, "El año no puede estar vacio"));
+                errores.Add(new Error(TipoError.Critico, posicion, "El año no puede estar vacio"));
                 return errores;
             }
 
@@ -44,12 +45,26 @@ namespace SIPOTPE.SIPOT.Campos
             return errores;
         }
 
-        public override string ObtenerValorRegistroParaXML(Registro registro)
+        public override List<Error> ValidarRegistros()
         {
-            if (ValidarRegistro(registro).Count > 0)
-                throw new Exception("El Año contiene un valor invalido");
+            var errores = new List<Error>();
+            var registrosSinError = new List<string>();
 
-            return registro.Valor;
+            foreach (var registro in Registros)
+            {
+                var lstErroresRegistro = ValidarRegistro(registro);
+                if (lstErroresRegistro.Count > 0)
+                    errores.AddRange(lstErroresRegistro);
+                else
+                    registrosSinError.Add(registro.ToString());
+            }
+
+            // Detectar multiples años en el mismo formato
+            if (registrosSinError.Count > 0 && registrosSinError.Distinct().Count() != 1)
+                errores.Add(new Error(TipoError.Advertencia, Posicion,
+                    "El formato solo debe contener registros de un año en especifico, establecer multiples años puede ocasionar perdida de información al reemplazar la información existente en el SIPOT."));
+
+            return errores;
         }
     }
 }
