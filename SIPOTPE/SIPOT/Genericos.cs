@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Xml;
 
 namespace SIPOTPE.SIPOT
 {
@@ -24,6 +25,14 @@ namespace SIPOTPE.SIPOT
                 return;
 
             cadena.Remove(largoCadena - 1, 1);
+        }
+
+        public static string EscaparCadenaParaXML(string cadena)
+        {
+            var documento = new XmlDocument();
+            var nodo = documento.CreateElement("root");
+            nodo.InnerText = cadena;
+            return nodo.InnerXml;
         }
     }
 }

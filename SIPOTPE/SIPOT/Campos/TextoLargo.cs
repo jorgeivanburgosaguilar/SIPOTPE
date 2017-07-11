@@ -53,7 +53,7 @@ namespace SIPOTPE.SIPOT.Campos
             if (valor.Length > LargoMaximo)
                 valor = valor.Substring(0, LargoMaximo);
 
-            return Regex.Replace(valor, @"[^\w\d!""#$%&'()*+,\-.?¿¡@_:;Üü°Öö/\s]", "");
+            return Genericos.EscaparCadenaParaXML(Regex.Replace(valor, @"[^\w\d!""#$%&'()*+,\-.?¿¡@_:;Üü°Öö/\s]", ""));
         }
     }
 }
