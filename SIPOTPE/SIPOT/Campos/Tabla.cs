@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -202,12 +203,30 @@ namespace SIPOTPE.SIPOT.Campos
 
         public override StringBuilder HaciaXML()
         {
+            var ordenarCamposPorTipo = Convert.ToBoolean(ConfigurationManager.AppSettings.Get("OrdenarCamposPorTipo"));
             var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
             var plantillaCampoTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/CampoTabla.xml"));
             var plantillaRegistroTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/RegistroCampoTabla.xml"));
-            var tiposCampo = Enum.GetValues(typeof(TipoCampo)).Cast<TipoCampo>().ToList();
             var tabla = ProcesarTabla();
             var strRegistrosTabla = new StringBuilder();
+
+            var tiposCampo = new List<TipoCampo>();
+            if (ordenarCamposPorTipo)
+            {
+                tiposCampo.AddRange(Enum.GetValues(typeof(TipoCampo)).Cast<TipoCampo>().ToList());
+            }
+            else
+            {
+                // ReSharper disable once LoopCanBePartlyConvertedToQuery
+                foreach (var campo in Campos)
+                {
+                    var tipoCampoActual = campo.Tipo;
+                    if (tiposCampo.Contains(tipoCampoActual))
+                        continue;
+
+                    tiposCampo.Add(tipoCampoActual);
+                }
+            }
             
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var registro in Registros)

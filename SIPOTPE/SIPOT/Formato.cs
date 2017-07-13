@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -68,9 +69,27 @@ namespace SIPOTPE.SIPOT
 
         public string HaciaXML()
         {
+            var ordenarCamposPorTipo = Convert.ToBoolean(ConfigurationManager.AppSettings.Get("OrdenarCamposPorTipo"));
             var plantillaFormato = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Formato.xml"));
             var plantillaCampo = Template.Parse(File.ReadAllText("SIPOT/Plantillas/Campo.xml"));
-            var tiposCampo = Enum.GetValues(typeof (TipoCampo)).Cast<TipoCampo>().ToList();
+
+            var tiposCampo = new List<TipoCampo>();
+            if (ordenarCamposPorTipo)
+            {
+                tiposCampo.AddRange(Enum.GetValues(typeof (TipoCampo)).Cast<TipoCampo>().ToList());
+            }
+            else
+            {
+                // ReSharper disable once LoopCanBePartlyConvertedToQuery
+                foreach (var campo in Campos)
+                {
+                    var tipoCampoActual = campo.Tipo;
+                    if (tiposCampo.Contains(tipoCampoActual))
+                        continue;
+
+                    tiposCampo.Add(tipoCampoActual);
+                }
+            }
 
             var strCamposFormato = new StringBuilder();
             foreach (var tipoCampo in tiposCampo)
