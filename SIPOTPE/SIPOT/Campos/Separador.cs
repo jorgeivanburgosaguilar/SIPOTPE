@@ -31,10 +31,5 @@ namespace SIPOTPE.SIPOT.Campos
         {
             return new List<Error>();
         }
-
-        public override string HaciaXML()
-        {
-            return string.Empty;
-        }
     }
 }

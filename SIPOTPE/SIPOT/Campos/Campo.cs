@@ -79,18 +79,18 @@ namespace SIPOTPE.SIPOT.Campos
             return ValidarRegistro(registro).Count > 0 ? ValorPorDefecto : registro.Valor;
         }
 
-        public virtual string HaciaXML()
+        public virtual StringBuilder HaciaXML()
         {
             var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
             if (!configuracionesXML.Procesar)
-                return string.Empty;
+                return new StringBuilder();
 
             string nombreRegistro;
             string rutaPlantillaRegistro;
 
             if (EstaDentroDeUnaTabla)
             {
-                nombreRegistro = string.Format("{0}Tabla", configuracionesXML.NombreRegistro);
+                nombreRegistro = configuracionesXML.NombreRegistroTabla;
                 rutaPlantillaRegistro = Tipo == TipoCampo.Catalogo ? "SIPOT/Plantillas/RegistroCatalogoTabla.xml" : "SIPOT/Plantillas/RegistroTabla.xml";
             }
             else
@@ -119,7 +119,7 @@ namespace SIPOTPE.SIPOT.Campos
             // Eliminar ultimo "\n"
             Genericos.EliminarUltimoCaracter(strRegistrosCampos);
 
-            return strRegistrosCampos.ToString();
+            return strRegistrosCampos;
         }
 
         /// <summary>

@@ -4,11 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using DevExpress.Spreadsheet;
-using Newtonsoft.Json;
 using SIPOTPE.SIPOT;
 using SIPOTPE.SIPOT.Campos;
 using SIPOTPE.SIPOT.Enumeradores;
-using Formatting = Newtonsoft.Json.Formatting;
 
 namespace SIPOTPE
 {
@@ -243,21 +241,26 @@ namespace SIPOTPE
             }
             else
             {
-                Console.WriteLine("Total de Errores Encontrados: {0}", listaErrores.Count);
+                Console.WriteLine("== Resumen de Errores Encontrados ==");
                 Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
                 Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
                 Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
+                Console.WriteLine("Total de Errores Encontrados: {0}\n", listaErrores.Count);
 
                 // Generar formato XML
+                Console.WriteLine("Convirtiendo el formato a XML");
                 var formatoXML = formato.HaciaXML();
 
-                File.WriteAllText("formato.json", JsonConvert.SerializeObject(formato, Formatting.Indented));
                 File.WriteAllText("formato.xml", formatoXML);
-                File.WriteAllText("errores.txt", string.Join("\n", listaErrores));
+                File.WriteAllText("formato-errores.txt", string.Join("\n", listaErrores));
+
+                #if DEBUG
+                    File.WriteAllText("formato.json", Newtonsoft.Json.JsonConvert.SerializeObject(formato, Newtonsoft.Json.Formatting.Indented));
+                #endif
             }
 
             stopwatch.Stop();
-            Console.WriteLine("Tiempo transcurrido de procesamiento: {0}", stopwatch.Elapsed);
+            Console.WriteLine("\nTiempo transcurrido de procesamiento: {0}", stopwatch.Elapsed);
 
             #if DEBUG
                 Console.WriteLine("\nPulse cualquier tecla para finalizar");

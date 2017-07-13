@@ -12,6 +12,16 @@ namespace SIPOTPE.SIPOT.Campos.Atributos
         public string NombreRegistro { get; private set; }
         public bool Procesar { get; set; }
 
+        public string NombreCampoTabla
+        {
+            get { return string.Format("{0}Tabla", NombreCampo); }
+        }
+
+        public string NombreRegistroTabla
+        {
+            get { return string.Format("{0}Tabla", NombreRegistro); }
+        }
+
         public ConfiguracionesXML()
         {
             NombreCampo =

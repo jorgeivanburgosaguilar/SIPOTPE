@@ -95,10 +95,10 @@ namespace SIPOTPE.SIPOT
                 var strCamposPorTipo = new StringBuilder();
 
                 // ReSharper disable once LoopCanBePartlyConvertedToQuery
-                foreach (var campo in Campos.Where(campo => campo.Tipo == tipoCampoActual))
+                foreach (var campo in Campos.Where(campo => campo.Tipo.Equals(tipoCampoActual)))
                 {
                     var salidaXML = campo.HaciaXML();
-                    if (string.IsNullOrWhiteSpace(salidaXML))
+                    if (salidaXML.Length <= 0)
                         continue;
 
                     strCamposPorTipo.Append(salidaXML);

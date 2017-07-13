@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using DotLiquid;
-using Newtonsoft.Json;
 using SIPOTPE.SIPOT.Campos.Atributos;
 using SIPOTPE.SIPOT.Enumeradores;
 
@@ -198,16 +197,10 @@ namespace SIPOTPE.SIPOT.Campos
             // al ser considerados invalidos.
             tabla.Add(ValorPorDefectoEntero, camposTablaVacio);
 
-            #if DEBUG
-                File.WriteAllText(string.Format("tablaPorFila_{0}.json", ID), JsonConvert.SerializeObject(tablaPorFila, Formatting.Indented));
-                File.WriteAllText(string.Format("tablaPorID_{0}.json", ID), JsonConvert.SerializeObject(tablaPorID, Formatting.Indented));
-                File.WriteAllText(string.Format("tabla_{0}.json", ID), JsonConvert.SerializeObject(tabla, Formatting.Indented));
-            #endif
-
             return tabla;
         }
 
-        public override string HaciaXML()
+        public override StringBuilder HaciaXML()
         {
             var configuracionesXML = (ConfiguracionesXML) GetType().GetCustomAttribute(typeof (ConfiguracionesXML), false);
             var plantillaCampoTabla = Template.Parse(File.ReadAllText("SIPOT/Plantillas/CampoTabla.xml"));
@@ -248,7 +241,7 @@ namespace SIPOTPE.SIPOT.Campos
                         continue;
 
                     var strCamposRegistroPorTipo = new StringBuilder();
-                    foreach (var campo in camposTabla.Where(c => c.Tipo == tipoCampoActual))
+                    foreach (var campo in camposTabla.Where(c => c.Tipo.Equals(tipoCampoActual)))
                     {
                         strCamposRegistroPorTipo.Append(campo.HaciaXML());
                         strCamposRegistroPorTipo.Append("\n");
@@ -261,7 +254,7 @@ namespace SIPOTPE.SIPOT.Campos
                     strCamposTabla.Append(plantillaCampoTabla.Render(Hash.FromAnonymousObject(
                         new
                         {
-                            nombre = string.Format("{0}Tabla", configXMLTipoCampo.NombreCampo),
+                            nombre = configXMLTipoCampo.NombreCampoTabla,
                             registros = strCamposRegistroPorTipo.ToString()
                         }
                         )));
@@ -288,7 +281,7 @@ namespace SIPOTPE.SIPOT.Campos
             // Eliminar ultimo "\n"
             Genericos.EliminarUltimoCaracter(strRegistrosTabla);
 
-            return strRegistrosTabla.ToString();
+            return strRegistrosTabla;
         }
 
         public override Campo Clonar()
