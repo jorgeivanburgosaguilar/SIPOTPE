@@ -237,7 +237,7 @@ namespace SIPOTPE
                 Console.WriteLine(
                     "Se encontraron {0} {1}, verifique que la estructura del formato no haya sido alterada.",
                     cantidadErroresCriticos, cantidadErroresCriticos > 1 ? "errores criticos" : "error critico");
-                File.WriteAllText("errores.txt", string.Join("\n", erroresCriticos));
+                File.WriteAllText("formato-errores-criticos.txt", string.Join("\n", erroresCriticos));
             }
             else
             {
