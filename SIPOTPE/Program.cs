@@ -208,6 +208,8 @@ namespace SIPOTPE
                     // y de las tablas.
                     if (fila == 7)
                     {
+                        // ToDo: No hacer esto... procesar primero la estructura luego los registros, ya que
+                        // ToDo: si no ponen nada sobretodo en los campos tipo tabla que es un muy comun lo dejen vacio
                         if (campo is Catalogo)
                             ProcesarCatalogo(campo, libro, hojaFormato.DataValidations.GetDataValidation(celda));
 
