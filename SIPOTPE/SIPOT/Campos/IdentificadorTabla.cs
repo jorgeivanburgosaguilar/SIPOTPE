@@ -23,7 +23,7 @@ namespace SIPOTPE.SIPOT.Campos
 
             if (string.IsNullOrWhiteSpace(valor))
             {
-                errores.Add(new Error(TipoError.Advertencia, posicion, "El Identificador de la Tabla no debe estar vacio."));
+                errores.Add(new Error(TipoError.Grave, posicion, "El Identificador de la Tabla no debe estar vacio."));
                 return errores;
             }
 

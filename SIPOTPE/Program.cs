@@ -243,18 +243,21 @@ namespace SIPOTPE
             }
             else
             {
+                var cantidadErroresGraves = listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave));
                 Console.WriteLine("== Resumen de Errores Encontrados ==");
-                Console.WriteLine("Graves: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Grave)));
+                Console.WriteLine("Graves: {0}", cantidadErroresGraves);
                 Console.WriteLine("Advertencias: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Advertencia)));
                 Console.WriteLine("Informativos: {0}", listaErrores.Count(p => p.Tipo.Equals(TipoError.Informativo)));
                 Console.WriteLine("Total de Errores Encontrados: {0}\n", listaErrores.Count);
 
-                // Generar formato XML
-                Console.WriteLine("Convirtiendo el formato a XML");
-                var formatoXML = formato.HaciaXML();
-
-                File.WriteAllText("formato.xml", formatoXML);
                 File.WriteAllText("formato-errores.txt", string.Join("\n", listaErrores));
+
+                // Generar formato XML
+                if (cantidadErroresGraves < 1)
+                {
+                    Console.WriteLine("Convirtiendo el formato a XML");
+                    File.WriteAllText("formato.xml", formato.HaciaXML());
+                }
 
                 #if DEBUG
                     File.WriteAllText("formato.json", Newtonsoft.Json.JsonConvert.SerializeObject(formato, Newtonsoft.Json.Formatting.Indented));
